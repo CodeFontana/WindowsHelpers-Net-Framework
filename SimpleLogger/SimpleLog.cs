@@ -19,18 +19,19 @@ namespace SimpleLogger
         public uint LogFileMaxCount = 10;
         public uint LogFileMaxSize = 50;
 
-        public SimpleLog(string logName)
+        public SimpleLog(string logName, string logPath)
         {
-            LogFilename = 
-            LogFolder = FileSystem.ParsePath(logName);
-            
+
+
+
+
             try
             {
-                // DEBUG
-                Console.WriteLine(FileSystem.ParseFriendlyname(Process.GetCurrentProcess().MainModule.FileName));
+                string processName = Process.GetCurrentProcess().MainModule.FileName;
+                Console.WriteLine(FileSystem.ParseFriendlyname(processName));
 
                 var logFiles = Directory.EnumerateFiles(LogFolder)
-                    .Where(f => f.StartsWith(LogFolder + "\\" + FileSystem.ParseFriendlyname(Process.GetCurrentProcess().MainModule.FileName)))
+                    .Where(f => f.StartsWith(LogFolder + "\\" + FileSystem.ParseFriendlyname(processName)))
                     .OrderBy(f => f);
 
                 int logCount = Enumerable.Count(logFiles);
@@ -44,8 +45,6 @@ namespace SimpleLogger
             {
                 LogException(e, "ERROR: Failed to clean excess log files.");
             }
-
-            
         }
 
         public void Log(string message)
