@@ -28,10 +28,8 @@ namespace WindowsNative
         public static bool IsHexString(string s)
         {
             foreach (char c in s)
-            {
                 if (!IsHexChar(c))
                     return false;
-            }
             return true;
         }
 

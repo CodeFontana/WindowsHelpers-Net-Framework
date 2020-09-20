@@ -57,11 +57,13 @@ namespace SimpleLogger
             set { _logMaxCount = value; }
         }
 
-        public enum MsgType { INFO, DEBUG, WARN, ERROR };
+        public enum MsgType { NONE, INFO, DEBUG, WARN, ERROR };
 
         public SimpleLog(string logName, string logPath = null, long maxBytes = 50 * 1048576, uint maxCount = 10)
         {
             Open(logName, logPath, maxBytes, maxCount);
+            this.Log("##################################################");
+            this.Log("Log begins.");
         }
 
         private void Open(string logName, string logPath = null, long maxBytes = 50 * 1048576, uint maxCount = 10)
@@ -149,6 +151,8 @@ namespace SimpleLogger
         {
             try
             {
+                this.Log("Log ends.");
+                this.Log("##################################################");
                 _logWriter.Dispose();
                 _logStream.Dispose();
                 return true;
@@ -165,6 +169,9 @@ namespace SimpleLogger
 
             switch (entryType)
             {
+                case MsgType.NONE:
+                    header += "";
+                    break;
                 case MsgType.INFO:
                     header += " INFO|";
                     break;
@@ -204,7 +211,10 @@ namespace SimpleLogger
 
         public static void Log(string component, string message, MsgType logLevel = MsgType.INFO) 
         {
-            var logger = _logManager.Where(l => l.Item1.ToLower().Equals(component.ToLower())).FirstOrDefault();
+            var logger = _logManager
+                .Where(l => l.Item1.ToLower().Equals(component.ToLower()))
+                .FirstOrDefault();
+
             if (logger != null)
                 logger.Item2.Log(message, logLevel);
             else
@@ -236,7 +246,10 @@ namespace SimpleLogger
 
         public static void Log(string component, Exception e, string message)
         {
-            var logger = _logManager.Where(l => l.Item1.ToLower().Equals(component.ToLower())).FirstOrDefault();
+            var logger = _logManager
+                .Where(l => l.Item1.ToLower().Equals(component.ToLower()))
+                .FirstOrDefault();
+
             if (logger != null)
                 logger.Item2.Log(e, message);
             else
