@@ -40,57 +40,38 @@ namespace WindowsNative
             List<string> list2,
             List<string> matchExceptions = null)
         {
-            // Same number of elements?
+            // Unequal number of elements?
             if (list1.Count != list2.Count)
-            {
-                // Return
                 return false;
-            }
 
             // Flag for skipping element check (based on exception)
             bool skipFlag = false;
 
-            // Iterate list elements
             for (int i = 0; i < list1.Count; i++)
             {
-                // Do we have any exceptions?
                 if (matchExceptions != null)
                 {
-                    // Iterate exceptions
                     foreach (string s in matchExceptions)
                     {
-                        // Does this list item match an exception?
                         if (list1[i].ToLower().Contains(s.ToLower()) || list1[i].ToLower().Contains(s.ToLower()) ||
                             list2[i].ToLower().Contains(s.ToLower()) || list2[i].ToLower().Contains(s.ToLower()))
                         {
-                            // Set flag
                             skipFlag = true;
-
-                            // Break inner loop early
                             break;
                         }
                     }
                 }
 
-                // Skip comparison?
                 if (skipFlag)
                 {
-                    // Reset flag
                     skipFlag = false;
-
-                    // Skip comparison -- next item
                     continue;
                 }
 
-                // Are the elements not equal?
                 if (!list1[i].Equals(list2[i]))
-                {
-                    // Return
                     return false;
-                }
             }
 
-            // Return -- all elements match
             return true;
         }
 
@@ -99,60 +80,41 @@ namespace WindowsNative
             List<Tuple<string, string>> list2,
             List<string> matchExceptions = null)
         {
-            // Same number of elements?
+            // Unequal number of elements?
             if (list1.Count != list2.Count)
-            {
-                // Return
                 return false;
-            }
 
             // Flag for skipping element check (based on exception)
             bool skipFlag = false;
 
-            // Iterate list elements
             for (int i = 0; i < list1.Count; i++)
             {
-                // Do we have any exceptions?
                 if (matchExceptions != null)
                 {
-                    // Iterate exceptions
                     foreach (string s in matchExceptions)
                     {
-                        // Does this list item match an exception?
                         if (list1[i].Item1.ToLower().Contains(s.ToLower()) ||
                             list1[i].Item2.ToLower().Contains(s.ToLower()) ||
                             list2[i].Item1.ToLower().Contains(s.ToLower()) ||
                             list2[i].Item2.ToLower().Contains(s.ToLower()))
                         {
-                            // Set flag
                             skipFlag = true;
-
-                            // Break inner loop early
                             break;
                         }
                     }
                 }
 
-                // Skip comparison?
                 if (skipFlag)
                 {
-                    // Reset flag
                     skipFlag = false;
-
-                    // Skip comparison -- next item
                     continue;
                 }
 
-                // Are the elements not equal?
                 if (!list1[i].Item1.Equals(list2[i].Item1) ||
                     !list1[i].Item2.Equals(list2[i].Item2))
-                {
-                    // Return
                     return false;
-                }
             }
 
-            // Return -- all elements match
             return true;
         }
 
@@ -196,29 +158,19 @@ namespace WindowsNative
                 maxValues[i] = maxColLength + columnPadding;
             }
 
-            // Setup output string
             var outputString = new StringBuilder();
-
-            // Flag for first element
             bool isFirst = true;
 
             // Iterate list elements (each string array)
             foreach (var line in inputList)
             {
-                // Is this NOT the first element?
                 if (!isFirst)
-                {
-                    // Append the line
                     outputString.AppendLine();
-                }
 
-                // Unset flag
                 isFirst = false;
 
-                // Iterate string array elements
                 for (int i = 0; i < line.Length; i++)
                 {
-                    // Read element
                     var value = line[i];
 
                     // Append the value with padding of the maximum length of any value for this element
@@ -226,7 +178,6 @@ namespace WindowsNative
                 }
             }
 
-            // Return
             return outputString.ToString();
         }
 
@@ -234,14 +185,9 @@ namespace WindowsNative
         {
             string returnString = "";
 
-            // Iterate input array
             foreach (string s in inputArray)
-            {
-                // Append string plus delimeter
                 returnString += s + delimeter;
-            }
 
-            // Return (trimming the extra delimeter from the end)
             return returnString.TrimEnd(delimeter.ToCharArray());
         }
     }

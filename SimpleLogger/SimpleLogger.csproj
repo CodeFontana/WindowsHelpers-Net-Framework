@@ -44,11 +44,5 @@
     <Compile Include="SimpleLog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WindowsNative\WindowsNative.csproj">
-      <Project>{8C5E53AF-8775-46C7-AD36-B1615A5E8A9E}</Project>
-      <Name>WindowsNative</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

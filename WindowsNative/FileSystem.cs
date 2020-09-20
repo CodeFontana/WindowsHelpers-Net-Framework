@@ -1,5 +1,6 @@
 ﻿using LocalPolicy;
 using Microsoft.Win32.SafeHandles;
+using SimpleLogger;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +17,7 @@ namespace WindowsNative
     public static class FileSystem
     {
         public static bool AddDirectorySecurity(
+            string logComponent,
             string fileOrFolder,
             string userAccount,
             FileSystemRights requestedRights,
@@ -57,7 +59,7 @@ namespace WindowsNative
                         gpo.Save();
 
                         // Write debug.
-                        Logger.WriteDebug("Refresh Windows policy...");
+                        SimpleLog.Log(logComponent, "Refresh Windows policy...");
 
                         // Refresh applied GPOs.
                         ProcessAPI.RunProcessEx(
@@ -69,7 +71,7 @@ namespace WindowsNative
                     catch (Exception e)
                     {
                         // Write exception.
-                        Logger.WriteException(e, "Failed to edit local group policy.");
+                        SimpleLog.Log(logComponent, e, "Failed to edit local group policy.");
                     }
                 }
 
@@ -129,7 +131,7 @@ namespace WindowsNative
                         out IntPtr hToken))
                     {
                         // Write debug.
-                        Logger.WriteDebug("ERROR: Unable to open specified process token [OpenProcessToken=" + Marshal.GetLastWin32Error().ToString() + "].");
+                        SimpleLog.Log(logComponent, "ERROR: Unable to open specified process token [OpenProcessToken=" + Marshal.GetLastWin32Error().ToString() + "].");
 
                         // Return.
                         return false;
@@ -139,7 +141,7 @@ namespace WindowsNative
                     if (!WindowsUtility.EnablePrivilege(hToken, NativeMethods.SE_TAKE_OWNERSHIP_NAME))
                     {
                         // Write debug.
-                        Logger.WriteDebug("ERROR: Failed to enable privilege [SeTakeOwnershipPrivilege].");
+                        SimpleLog.Log(logComponent, "ERROR: Failed to enable privilege [SeTakeOwnershipPrivilege].");
 
                         // Free resource.
                         Marshal.FreeHGlobal(hToken);
@@ -198,15 +200,11 @@ namespace WindowsNative
                     NativeMethods.LocalFree(acl);
 
                     // Let's try this over again.
-                    return AddDirectorySecurity(fileOrFolder, userAccount, requestedRights, controlType, inheritFlag, propFlag, false);
+                    return AddDirectorySecurity(logComponent, fileOrFolder, userAccount, requestedRights, controlType, inheritFlag, propFlag, false);
                 }
                 else
                 {
-                    // Write debug
-                    Logger.WriteDebug("EXCEPTION: " + e.Message);
-                    Logger.WriteDebug("ERROR: Failed to add filesystem permissions to [" + fileOrFolder + "].");
-
-                    // Return
+                    SimpleLog.Log(logComponent, e, "Failed to add filesystem permissions to [" + fileOrFolder + "].");
                     return false;
                 }
             }
@@ -235,7 +233,7 @@ namespace WindowsNative
             return numBytes.ToString();
         }
 
-        public static bool CheckDiskStatus()
+        public static bool CheckDiskStatus(string logComponent)
         {
             // Get list of drives
             DriveInfo[] allDrives = DriveInfo.GetDrives();
@@ -247,7 +245,7 @@ namespace WindowsNative
                 if (d.DriveType.ToString().ToLower().Equals("fixed"))
                 {
                     // Write debug
-                    Logger.WriteDebug("Check drive [read-only]: " + d.Name);
+                    SimpleLog.Log(logComponent, "Check drive [read-only]: " + d.Name);
 
                     // Run plain ChkDsk
                     Tuple<long, string> result = ProcessAPI.RunProcessEx(
@@ -260,12 +258,12 @@ namespace WindowsNative
                     if (result.Item2.ToLower().Contains("windows has scanned the file system and found no problems"))
                     {
                         // Write debug
-                        Logger.WriteDebug("CHKDSK result: OK");
+                        SimpleLog.Log(logComponent, "CHKDSK result: OK");
                     }
                     else
                     {
                         // Write debug
-                        Logger.WriteDebug("CHKDSK result: FAIL");
+                        SimpleLog.Log(logComponent, "CHKDSK result: FAIL");
 
                         // Return -- problems found
                         return false;
@@ -277,7 +275,7 @@ namespace WindowsNative
             return true;
         }
 
-        public static bool CheckSmartStatus()
+        public static bool CheckSmartStatus(string logComponent)
         {
             try
             {
@@ -300,41 +298,41 @@ namespace WindowsNative
                     var sizeInBytes = drive["Size"];
 
                     // Write debug
-                    Logger.WriteDebug("Found drive: " + model.ToString());
+                    SimpleLog.Log(logComponent, "Found drive: " + model.ToString());
 
                     // Is the serial number available?
                     if (serial != null)
                     {
                         // Write debug
-                        Logger.WriteDebug("  Serial: " + serial.ToString());
+                        SimpleLog.Log(logComponent, "  Serial: " + serial.ToString());
                     }
 
                     // Is the interface available?
                     if (interfacetype != null)
                     {
                         // Write debug
-                        Logger.WriteDebug("  Interface: " + interfacetype.ToString());
+                        SimpleLog.Log(logComponent, "  Interface: " + interfacetype.ToString());
                     }
 
                     // Is the partition count available?
                     if (partitions != null)
                     {
                         // Write debug
-                        Logger.WriteDebug("  Partitions: " + partitions.ToString());
+                        SimpleLog.Log(logComponent, "  Partitions: " + partitions.ToString());
                     }
 
                     // Is the size available?
                     if (sizeInBytes != null)
                     {
                         // Write debug
-                        Logger.WriteDebug("  Size: " + FileSystem.BytesToReadableValue(long.Parse(sizeInBytes.ToString().Trim())));
+                        SimpleLog.Log(logComponent, "  Size: " + FileSystem.BytesToReadableValue(long.Parse(sizeInBytes.ToString().Trim())));
                     }
 
                     // Is the SMART status available
                     if (smart != null)
                     {
                         // Write debug
-                        Logger.WriteDebug("  SMART: " + smart.ToString());
+                        SimpleLog.Log(logComponent, "  SMART: " + smart.ToString());
 
                         // Is the SMART status OK?
                         if (!smart.ToString().ToLower().Equals("ok"))
@@ -352,7 +350,7 @@ namespace WindowsNative
                 if (!smartOK)
                 {
                     // Write debug
-                    Logger.WriteDebug("ERROR: SMART status failure detected.");
+                    SimpleLog.Log(logComponent, "ERROR: SMART status failure detected.");
 
                     // Return
                     return false;
@@ -375,6 +373,7 @@ namespace WindowsNative
         }
 
         public static bool CopyFile(
+            string logComponent,
             string sourceFileName,
             string destFileName,
             bool overWrite = true,
@@ -382,8 +381,8 @@ namespace WindowsNative
             bool handleInUseOnReboot = false)
         {
             // Write debug
-            Logger.WriteDebug("Copy file: " + sourceFileName, !verboseOutput);
-            Logger.WriteDebug("       To: " + destFileName, !verboseOutput);
+            SimpleLog.Log(logComponent, "Copy file: " + sourceFileName);
+            SimpleLog.Log(logComponent, "       To: " + destFileName);
 
             try
             {
@@ -393,7 +392,7 @@ namespace WindowsNative
                     if (!File.Exists(sourceFileName))
                     {
                         // Write debug
-                        Logger.WriteDebug("ERROR: Source file does not exist [" + sourceFileName + "].");
+                        SimpleLog.Log(logComponent, "ERROR: Source file does not exist [" + sourceFileName + "].");
 
                         // Return
                         return false;
@@ -403,7 +402,7 @@ namespace WindowsNative
                     if (sourceFileName.ToLower().Equals(destFileName.ToLower()))
                     {
                         // Write debug
-                        Logger.WriteDebug("ERROR: Source and destination files must be different [" + sourceFileName + "].");
+                        SimpleLog.Log(logComponent, "ERROR: Source and destination files must be different [" + sourceFileName + "].");
 
                         // Return
                         return false;
@@ -486,7 +485,7 @@ namespace WindowsNative
                                 NativeMethods.MoveFileFlags.DelayUntilReboot);
 
                             // Write debug
-                            Logger.WriteDebug("Delete after reboot: " + incrementFilename);
+                            SimpleLog.Log(logComponent, "Delete after reboot: " + incrementFilename);
                         }
                         catch (Exception)
                         {
@@ -539,7 +538,7 @@ namespace WindowsNative
                                         NativeMethods.MoveFileFlags.DelayUntilReboot);
 
                                     // Write debug
-                                    Logger.WriteDebug("Reboot required: " + destFileName);
+                                    SimpleLog.Log(logComponent, "Reboot required: " + destFileName);
 
                                     // Return -- copy scheduled following a reboot
                                     return true;
@@ -547,7 +546,7 @@ namespace WindowsNative
                                 else if (!moveSuccess && !handleInUseOnReboot)
                                 {
                                     // Write debug
-                                    Logger.WriteDebug("ERROR: Destination file is in-use [" + destFileName + "].");
+                                    SimpleLog.Log(logComponent, "ERROR: Destination file is in-use [" + destFileName + "].");
 
                                     // Return
                                     return false;
@@ -588,6 +587,7 @@ namespace WindowsNative
         }
 
         public static bool CopyFolderContents(
+            string logComponent,
             string sourceFolder,
             string targetFolder,
             string[] reservedItems = null,
@@ -599,7 +599,7 @@ namespace WindowsNative
             if (!Directory.Exists(sourceFolder))
             {
                 // Write debug
-                Logger.WriteDebug("ERROR: Source folder does not exist [" + sourceFolder + "].");
+                SimpleLog.Log(logComponent, "ERROR: Source folder does not exist [" + sourceFolder + "].");
 
                 // Return
                 return false;
@@ -609,7 +609,7 @@ namespace WindowsNative
             if (sourceFolder.ToLower().Equals(targetFolder.ToLower()))
             {
                 // Write debug
-                Logger.WriteDebug("ERROR: Source and destination folders must be different [" + sourceFolder + "].");
+                SimpleLog.Log(logComponent, "ERROR: Source and destination folders must be different [" + sourceFolder + "].");
 
                 // Return
                 return false;
@@ -655,7 +655,7 @@ namespace WindowsNative
                             if (sourceFile.ToLower().EndsWith(str.ToLower()))
                             {
                                 // Write debug
-                                Logger.WriteDebug("Reserved file: " + sourceFile, !verboseOutput);
+                                SimpleLog.Log(logComponent, "Reserved file: " + sourceFile, !verboseOutput);
 
                                 // Set flag
                                 skipItem = true;
@@ -702,7 +702,7 @@ namespace WindowsNative
                                     if (verboseOutput)
                                     {
                                         // Write debug
-                                        Logger.WriteDebug("Reserved folder: " + sourceDir);
+                                        SimpleLog.Log(logComponent, "Reserved folder: " + sourceDir);
                                     }
 
                                     // Set flag
@@ -718,7 +718,7 @@ namespace WindowsNative
                             if (verboseOutput)
                             {
                                 // Write debug
-                                Logger.WriteDebug("Reserved folder: " + sourceDir);
+                                SimpleLog.Log(logComponent, "Reserved folder: " + sourceDir);
                             }
 
                             // Set flag
@@ -732,7 +732,7 @@ namespace WindowsNative
                             if (verboseOutput)
                             {
                                 // Write debug
-                                Logger.WriteDebug("Reserved folder: " + sourceDir);
+                                SimpleLog.Log(logComponent, "Reserved folder: " + sourceDir);
                             }
 
                             // Set flag
@@ -749,8 +749,8 @@ namespace WindowsNative
                             if (verboseOutput)
                             {
                                 // Write debug
-                                Logger.WriteDebug("Copy folder: " + sourceDir);
-                                Logger.WriteDebug("         To: " + destinationPath);
+                                SimpleLog.Log(logComponent, "Copy folder: " + sourceDir);
+                                SimpleLog.Log(logComponent, "         To: " + destinationPath);
                             }
 
                             try
@@ -786,6 +786,7 @@ namespace WindowsNative
         }
 
         public static bool DeleteFile(
+            string logComponent,
             string fileName,
             bool raiseException = false,
             bool handleInUseOnReboot = false)
@@ -807,7 +808,7 @@ namespace WindowsNative
                         File.Delete(fileName);
 
                         // Write debug
-                        Logger.WriteDebug("Deleted file: " + fileName);
+                        SimpleLog.Log(logComponent, "Deleted file: " + fileName);
 
                         // Set flag
                         fileDeleted = true;
@@ -855,7 +856,7 @@ namespace WindowsNative
                                     NativeMethods.MoveFileFlags.DelayUntilReboot);
 
                                 // Write debug
-                                Logger.WriteDebug("Delete after reboot: " + deleteFilename);
+                                SimpleLog.Log(logComponent, "Delete after reboot: " + deleteFilename);
                             }
                             catch (Exception)
                             {
@@ -866,7 +867,7 @@ namespace WindowsNative
                                     NativeMethods.MoveFileFlags.DelayUntilReboot);
 
                                 // Write debug
-                                Logger.WriteDebug("Delete after reboot: " + fileName);
+                                SimpleLog.Log(logComponent, "Delete after reboot: " + fileName);
                             }
                         }
                         else if (fileName.ToLower().Contains(".delete_on_reboot"))
@@ -875,7 +876,7 @@ namespace WindowsNative
                             fileDeleted = false;
 
                             // Write debug
-                            Logger.WriteDebug("Deleted after reboot: " + fileName, true);
+                            SimpleLog.Log(logComponent, "Deleted after reboot: " + fileName, true);
                         }
                         else
                         {
@@ -883,7 +884,7 @@ namespace WindowsNative
                             File.Delete(fileName);
 
                             // Write debug
-                            Logger.WriteDebug("Deleted file: " + fileName);
+                            SimpleLog.Log(logComponent, "Deleted file: " + fileName);
 
                             // Set flag
                             fileDeleted = true;
@@ -910,7 +911,7 @@ namespace WindowsNative
             return fileDeleted;
         }
 
-        public static bool DeleteFilePattern(string folderName, string filePattern, bool raiseException = false)
+        public static bool DeleteFilePattern(string logComponent, string folderName, string filePattern, bool raiseException = false)
         {
             // Flag for return
             bool fileDeleted = false;
@@ -963,7 +964,7 @@ namespace WindowsNative
             return fileDeleted;
         }
 
-        public static bool DeleteFolder(string folderName, bool raiseException = false)
+        public static bool DeleteFolder(string logComponent, string folderName, bool raiseException = false)
         {
             // Flag for return
             bool folderDeleted = false;
@@ -974,7 +975,7 @@ namespace WindowsNative
                 try
                 {
                     // Write debug
-                    Logger.WriteDebug("Delete folder: " + folderName);
+                    SimpleLog.Log(logComponent, "Delete folder: " + folderName);
 
                     // Delete contents of the folder first
                     DeleteFolderContents(folderName, null, true);
@@ -1007,8 +1008,11 @@ namespace WindowsNative
             return folderDeleted;
         }
 
-        public static void DeleteFolderContents(string targetFolder, string[] reservedItems,
-            bool verboseOutput = true, bool recurseReservedItems = true)
+        public static void DeleteFolderContents(string logComponent, 
+            string targetFolder, 
+            string[] reservedItems,
+            bool verboseOutput = true, 
+            bool recurseReservedItems = true)
         {
             // Does the specified directory exist?
             if (!Directory.Exists(targetFolder))
@@ -1060,7 +1064,7 @@ namespace WindowsNative
                                 if (folderList[n].ToString().ToLower().EndsWith(str.ToLower()))
                                 {
                                     // Write debug
-                                    Logger.WriteDebug("Reserved folder: " + folderList[n].ToString());
+                                    SimpleLog.Log(logComponent, "Reserved folder: " + folderList[n].ToString());
 
                                     // Set flag
                                     skipItem = true;
@@ -1080,7 +1084,7 @@ namespace WindowsNative
                                 try
                                 {
                                     // Write debug
-                                    Logger.WriteDebug("Remove junction: " + folderList[n].ToString());
+                                    SimpleLog.Log(logComponent, "Remove junction: " + folderList[n].ToString());
 
                                     // Remove NTFS junction point
                                     FileSystem.RemoveJunction(folderList[n].ToString());
@@ -1105,7 +1109,7 @@ namespace WindowsNative
                             if (verboseOutput)
                             {
                                 // Write debug
-                                Logger.WriteDebug("Delete folder: " + folderList[n].ToString());
+                                SimpleLog.Log(logComponent, "Delete folder: " + folderList[n].ToString());
                             }
 
                             // After recurse is finished, delete the folder
@@ -1142,7 +1146,7 @@ namespace WindowsNative
                                 if (fileList[n].ToString().ToLower().EndsWith(str.ToLower()))
                                 {
                                     // Write debug
-                                    Logger.WriteDebug("Reserved file: " + fileList[n].ToString());
+                                    SimpleLog.Log(logComponent, "Reserved file: " + fileList[n].ToString());
 
                                     // Set flag
                                     skipItem = true;
@@ -1157,7 +1161,7 @@ namespace WindowsNative
                             if (verboseOutput)
                             {
                                 // Write debug
-                                Logger.WriteDebug("Delete file: " + fileList[n].ToString());
+                                SimpleLog.Log(logComponent, "Delete file: " + fileList[n].ToString());
                             }
 
                             // Unset read-only parameter (in case it's set)
@@ -1209,7 +1213,7 @@ namespace WindowsNative
             }
         }
 
-        public static string ListFolderContents(string folderPath)
+        public static string ListFolderContents(string logComponent, string folderPath)
         {
             // List for storing results
             List<string[]> foldersAndFiles = new List<string[]>();
@@ -1304,11 +1308,14 @@ namespace WindowsNative
             return paddedTable;
         }
 
-        public static bool MoveFile(string sourceFileName, string destFileName, bool overWrite = true)
+        public static bool MoveFile(string logComponent,
+            string sourceFileName,
+            string destFileName,
+            bool overWrite = true)
         {
             // Write debug
-            Logger.WriteDebug("Move file: " + sourceFileName);
-            Logger.WriteDebug("       To: " + destFileName);
+            SimpleLog.Log(logComponent, "Move file: " + sourceFileName);
+            SimpleLog.Log(logComponent, "       To: " + destFileName);
 
             try
             {
@@ -1382,6 +1389,7 @@ namespace WindowsNative
         }
 
         public static bool RemoveDirectorySecurity(
+            string logComponent,
             string folderName,
             string userAccount,
             FileSystemRights revokedRights,
@@ -1457,7 +1465,10 @@ namespace WindowsNative
             }
         }
 
-        public static void ReplaceFileIn(string baseFolder, string replaceFile, string[] additionalFiles = null)
+        public static void ReplaceFileIn(string logComponent,
+            string baseFolder,
+            string replaceFile,
+            string[] additionalFiles = null)
         {
             try
             {
@@ -1482,7 +1493,7 @@ namespace WindowsNative
                     if (ParseShortname(someFile).ToLower().Equals(ParseShortname(replaceFile).ToLower()))
                     {
                         // Write debug
-                        Logger.WriteDebug("Replace file: " + someFile);
+                        SimpleLog.Log(logComponent, "Replace file: " + someFile);
 
                         // Copy/overwrite replacement file
                         CopyFile(replaceFile, someFile, true);
@@ -1500,7 +1511,7 @@ namespace WindowsNative
                                     string addFileDest = ParsePath(someFile) + "\\" + ParseShortname(addFile);
 
                                     // Write debug
-                                    Logger.WriteDebug("Replace file: " + addFileDest);
+                                    SimpleLog.Log(logComponent, "Replace file: " + addFileDest);
 
                                     // Copy/overwrite additonal replacement file
                                     CopyFile(addFile, addFileDest, true);

@@ -54,6 +54,10 @@
       <Project>{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}</Project>
       <Name>GroupPolicy</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj">
+      <Project>{1c1cf399-1e5c-48ca-8f55-0b4156c8f19f}</Project>
+      <Name>SimpleLogger</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
