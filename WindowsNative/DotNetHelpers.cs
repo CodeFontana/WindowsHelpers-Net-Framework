@@ -27,9 +27,14 @@ namespace WindowsNative
 
         public static bool IsHexString(string s)
         {
-            foreach (char c in s)
+            foreach (char c in s) 
+            {
                 if (!IsHexChar(c))
+                {
                     return false;
+                }
+            }
+            
             return true;
         }
 
@@ -40,7 +45,9 @@ namespace WindowsNative
         {
             // Unequal number of elements?
             if (list1.Count != list2.Count)
+            {
                 return false;
+            }
 
             // Flag for skipping element check (based on exception)
             bool skipFlag = false;
@@ -67,7 +74,9 @@ namespace WindowsNative
                 }
 
                 if (!list1[i].Equals(list2[i]))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -80,7 +89,9 @@ namespace WindowsNative
         {
             // Unequal number of elements?
             if (list1.Count != list2.Count)
+            {
                 return false;
+            }
 
             // Flag for skipping element check (based on exception)
             bool skipFlag = false;
@@ -110,7 +121,9 @@ namespace WindowsNative
 
                 if (!list1[i].Item1.Equals(list2[i].Item1) ||
                     !list1[i].Item2.Equals(list2[i].Item2))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -148,7 +161,9 @@ namespace WindowsNative
 
                         // Is this column length greater than the max?
                         if (colLength > maxColLength)
+                        {
                             maxColLength = colLength; // Store new maximum.
+                        }
                     }
                 });
 
@@ -163,7 +178,9 @@ namespace WindowsNative
             foreach (var line in inputList)
             {
                 if (!isFirst)
+                {
                     outputString.AppendLine();
+                }
 
                 isFirst = false;
 
@@ -184,7 +201,9 @@ namespace WindowsNative
             string returnString = "";
 
             foreach (string s in inputArray)
+            {
                 returnString += s + delimeter;
+            }
 
             return returnString.TrimEnd(delimeter.ToCharArray());
         }

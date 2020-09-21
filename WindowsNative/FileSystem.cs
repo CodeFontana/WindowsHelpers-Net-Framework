@@ -30,7 +30,7 @@ namespace WindowsNative
                 // Is the "Remove Security Tab" Windows GPO configured?
                 // Note: If so, the current user will be unable to edit file/folder
                 //       security permissions. Lame.
-                if (Registry.RegistryValueExists(
+                if (Registry.ValueExists(
                     "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
                     "NoSecurityTab",
                     Microsoft.Win32.RegistryHive.CurrentUser))
@@ -236,23 +236,33 @@ namespace WindowsNative
                     SimpleLog.Log(logComponent, "Found drive: " + model.ToString());
 
                     if (serial != null)
+                    {
                         SimpleLog.Log(logComponent, "  Serial: " + serial.ToString());
+                    }
 
                     if (interfacetype != null)
+                    {
                         SimpleLog.Log(logComponent, "  Interface: " + interfacetype.ToString());
+                    }
 
                     if (partitions != null)
+                    {
                         SimpleLog.Log(logComponent, "  Partitions: " + partitions.ToString());
+                    }
 
                     if (sizeInBytes != null)
+                    {
                         SimpleLog.Log(logComponent, "  Size: " + FileSystem.BytesToReadableValue(long.Parse(sizeInBytes.ToString().Trim())));
+                    }
 
                     if (smart != null)
                     {
                         SimpleLog.Log(logComponent, "  SMART: " + smart.ToString());
 
                         if (!smart.ToString().ToLower().Equals("ok"))
+                        {
                             smartOK = false;
+                        }
                     }
                 }
 
@@ -317,8 +327,12 @@ namespace WindowsNative
                     File.Copy(sourceFileName, destFileName, overWrite);
 
                     foreach (string file in Directory.GetFiles(ParsePath(destFileName)))
+                    {
                         if (file.ToLower().Contains(".delete_on_reboot"))
+                        {
                             DeleteFile(logComponent, file, false, true);
+                        }
+                    }
 
                     return true;
                 }
@@ -334,9 +348,13 @@ namespace WindowsNative
                             while (true)
                             {
                                 if (File.Exists(incrementFilename))
+                                {
                                     incrementFilename = destFileName + ".delete_on_reboot_" + (fileIncrement++).ToString();
+                                }
                                 else
+                                {
                                     break;
+                                }
                             }
 
                             // Attempt to rename destination file
@@ -360,9 +378,13 @@ namespace WindowsNative
                             while (true)
                             {
                                 if (File.Exists(pendingFilename))
+                                {
                                     pendingFilename = destFileName + ".pending_" + fileIncrement.ToString();
+                                }
                                 else
+                                {
                                     break;
+                                }
                             }
 
                             try
@@ -500,7 +522,9 @@ namespace WindowsNative
                                 if (sourceDir.ToLower().EndsWith(str.ToLower()))
                                 {
                                     if (verboseOutput)
+                                    {
                                         SimpleLog.Log(logComponent, "Reserved folder: " + sourceDir, SimpleLog.MsgType.DEBUG);
+                                    }
 
                                     skipItem = true;
                                 }
@@ -511,7 +535,9 @@ namespace WindowsNative
                         if (sourceDir.ToLower().Contains("system volume information"))
                         {
                             if (verboseOutput)
+                            {
                                 SimpleLog.Log(logComponent, "Reserved folder: " + sourceDir, SimpleLog.MsgType.DEBUG);
+                            }
 
                             skipItem = true;
                         }
@@ -520,7 +546,9 @@ namespace WindowsNative
                         if (sourceDir.ToLower().Contains("$recycle"))
                         {
                             if (verboseOutput)
+                            {
                                 SimpleLog.Log(logComponent, "Reserved folder: " + sourceDir, SimpleLog.MsgType.DEBUG);
+                            }
 
                             skipItem = true;
                         }
@@ -594,9 +622,13 @@ namespace WindowsNative
                                 while (true)
                                 {
                                     if (File.Exists(deleteFilename))
+                                    {
                                         deleteFilename = fileName + ".delete_on_reboot_" + (fileIncrement++).ToString();
+                                    }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
 
                                 // Attempt to rename file
@@ -657,7 +689,9 @@ namespace WindowsNative
             try
             {
                 if (!Directory.Exists(folderName))
+                {
                     return false;
+                }
 
                 string[] fileList = Directory.GetFiles(folderName);
 
@@ -683,7 +717,9 @@ namespace WindowsNative
                 SimpleLog.Log(logComponent, ex, "Exception caught deleting file.");
 
                 if (raiseException)
+                {
                     throw ex;
+                }
             }
 
             return fileDeleted;
@@ -708,7 +744,9 @@ namespace WindowsNative
                     SimpleLog.Log(logComponent, e, "Exception caught deleting folder.");
 
                     if (raiseException)
+                    {
                         throw e;
+                    }
                 }
             }
             else
@@ -726,7 +764,9 @@ namespace WindowsNative
             bool recurseReservedItems = true)
         {
             if (!Directory.Exists(targetFolder))
+            {
                 return;
+            }
 
             string[] fileList = Directory.GetFiles(targetFolder);
             string[] folderList = Directory.GetDirectories(targetFolder);
@@ -779,7 +819,7 @@ namespace WindowsNative
                                 try
                                 {
                                     SimpleLog.Log(logComponent, "Remove junction: " + folderList[n].ToString());
-                                    FileSystem.RemoveJunction(folderList[n].ToString());
+                                    RemoveJunction(folderList[n].ToString());
                                 }
                                 catch (Exception ex)
                                 {
@@ -789,13 +829,19 @@ namespace WindowsNative
                             else
                             {
                                 if (recurseReservedItems)
+                                {
                                     DeleteFolderContents(logComponent, folderList[n].ToString(), reservedItems, false);
+                                }
                                 else
+                                {
                                     DeleteFolderContents(logComponent, folderList[n].ToString(), null, false);
+                                }
                             }
 
                             if (verboseOutput)
+                            {
                                 SimpleLog.Log(logComponent, "Delete folder: " + folderList[n].ToString());
+                            }
 
                             Directory.Delete(folderList[n]);
                         }
@@ -830,7 +876,9 @@ namespace WindowsNative
                         if (!skipItem)
                         {
                             if (verboseOutput)
+                            {
                                 SimpleLog.Log(logComponent, "Delete file: " + fileList[n].ToString());
+                            }
 
                             File.SetAttributes(fileList[n], FileAttributes.Normal);
                             File.Delete(fileList[n]);
@@ -860,6 +908,7 @@ namespace WindowsNative
         {
             FileInfo fileInfo = new FileInfo(fileName);
             FileStream fileStream = null;
+
             try
             {
                 fileStream = fileInfo.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
@@ -879,7 +928,9 @@ namespace WindowsNative
             try
             {
                 if (!Directory.Exists(folderPath))
+                {
                     return "Specified folder was not found [" + folderPath + "].";
+                }
 
                 foldersAndFiles.Add(new string[] { "Folder(s)", "" });
                 foldersAndFiles.Add(new string[] { "---------", "" });
@@ -951,7 +1002,9 @@ namespace WindowsNative
             try
             {
                 if (overWrite)
+                {
                     DeleteFile(logComponent, destFileName);
+                }
 
                 File.Move(sourceFileName, destFileName);
                 return true;
@@ -979,7 +1032,9 @@ namespace WindowsNative
 
             // Reparse point opened OK?
             if (Marshal.GetLastWin32Error() != 0)
+            {
                 throw new Win32Exception("Unable to open reparse point.");
+            }
 
             return reparsePointHandle;
         }
@@ -987,26 +1042,39 @@ namespace WindowsNative
         public static string ParseFriendlyname(string filename)
         {
             string friendlyName = ParseShortname(filename);
+
             if (friendlyName.Contains("."))
+            {
                 return friendlyName.Substring(0, friendlyName.LastIndexOf("."));
+            }
             else
+            {
                 return friendlyName;
+            }
         }
 
         public static string ParsePath(string filename)
         {
             if (filename.Contains("\\"))
+            {
                 return filename.Substring(0, filename.LastIndexOf("\\"));
+            }
             else
+            {
                 return filename;
+            }
         }
 
         public static string ParseShortname(string filename)
         {
             if (filename.Contains("\\"))
+            {
                 return filename.Substring(filename.LastIndexOf("\\") + 1);
+            }
             else
+            {
                 return filename;
+            }
         }
 
         public static bool RemoveDirectorySecurity(string logComponent,
@@ -1033,7 +1101,9 @@ namespace WindowsNative
         public static void RemoveJunction(string junctionPoint)
         {
             if (!Directory.Exists(junctionPoint) && !File.Exists(junctionPoint))
+            {
                 return;
+            }
 
             // Open the junction point
             SafeFileHandle fileHandle = OpenReparsePoint(junctionPoint, NativeMethods.EFileAccess.GenericWrite);
@@ -1062,7 +1132,9 @@ namespace WindowsNative
                     inBuffer, 8, IntPtr.Zero, 0, out int BytesReturned, IntPtr.Zero);
 
                 if (!result)
+                {
                     throw new Win32Exception("ERROR: Unable to delete reparse point.");
+                }
             }
             finally
             {
@@ -1079,10 +1151,14 @@ namespace WindowsNative
             try
             {
                 if (!File.Exists(replaceFile))
+                {
                     return;
+                }
 
                 foreach (string subFolder in Directory.GetDirectories(baseFolder))
+                {
                     ReplaceFileIn(logComponent, subFolder, replaceFile, additionalFiles);
+                }
 
                 foreach (string someFile in Directory.GetFiles(baseFolder))
                 {
@@ -1129,12 +1205,16 @@ namespace WindowsNative
                     FileInfo[] files = dirInfo.GetFiles();
 
                     foreach (FileInfo fi in files)
+                    {
                         totalSize += fi.Length;
+                    }
 
                     DirectoryInfo[] directories = dirInfo.GetDirectories();
 
                     foreach (DirectoryInfo di in directories)
+                    {
                         totalSize += SizeOfFileOrFolder(di.FullName);
+                    }
 
                     return totalSize;
                 }

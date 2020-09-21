@@ -8,62 +8,26 @@ namespace SimpleLogger
 {
     public class SimpleLog
     {
-        private static List<Tuple<string, SimpleLog>> _logManager = new List<Tuple<string, SimpleLog>>();
-        public static List<Tuple<string, SimpleLog>> LogManager
-        {
-            get { return _logManager; }
-        }
+        public static List<Tuple<string, SimpleLog>> LogManager { get; } = new List<Tuple<string, SimpleLog>>();
 
         protected FileStream _logStream = null;
         protected StreamWriter _logWriter = null;
         private readonly object _lockObj = new object();
 
-        private string _logComponent;
-        public string LogComponent
-        {
-            get { return _logComponent; }
-            set { _logComponent = value; }
-        }
-
-        private string _logFilename;
-        public string LogFilename
-        {
-            get { return _logFilename; }
-        }
-
-        private string _logFolder = "";
-        public string LogFolder
-        {
-            get { return _logFolder; }
-        }
-
-        private int _logIncrement = 0;
-        public int LogIncrement
-        {
-            get { return _logIncrement; }
-        }
-
-        private long _logMaxBytes = 50 * 1048576;
-        public long LogMaxBytes
-        {
-            get { return _logMaxBytes; }
-            set { _logMaxBytes = value; }
-        }
-
-        private uint _logMaxCount = 10;
-        public uint LogMaxCount
-        {
-            get { return _logMaxCount; }
-            set { _logMaxCount = value; }
-        }
+        public string LogComponent { get; set; }
+        public string LogFilename { get; private set; }
+        public string LogFolder { get; private set; } = "";
+        public int LogIncrement { get; private set; } = 0;
+        public long LogMaxBytes { get; set; } = 50 * 1048576;
+        public uint LogMaxCount { get; set; } = 10;
 
         public enum MsgType { NONE, INFO, DEBUG, WARN, ERROR };
 
         public SimpleLog(string logName, string logPath = null, long maxBytes = 50 * 1048576, uint maxCount = 10)
         {
             Open(logName, logPath, maxBytes, maxCount);
-            this.Log("##################################################");
-            this.Log("Log begins.");
+            Log("##################################################");
+            Log("Log start.");
         }
 
         private void Open(string logName, string logPath = null, long maxBytes = 50 * 1048576, uint maxCount = 10)
@@ -72,7 +36,9 @@ namespace SimpleLogger
             if (LogFilename != null &&
                 _logWriter != null &&
                 _logWriter.BaseStream != null)
+            {
                 Close();
+            }
 
             string processName = Process.GetCurrentProcess().MainModule.FileName;
             string shortName = processName.Substring(processName.LastIndexOf("\\") + 1);
@@ -88,25 +54,25 @@ namespace SimpleLogger
             // Resolve path to store log file.
             if (logPath == null)
             {
-                _logFolder = logPath = processPath;
+                LogFolder = logPath = processPath;
             }
             else if (!Directory.Exists(logPath))
             {
                 Directory.CreateDirectory(logPath);
-                _logFolder = logPath;
+                LogFolder = logPath;
             }
             else
             {
-                _logFolder = logPath;
+                LogFolder = logPath;
             }
 
             // Set properties
-            _logComponent = logName;
-            _logMaxBytes = maxBytes;
-            _logMaxCount = maxCount;
+            LogComponent = logName;
+            LogMaxBytes = maxBytes;
+            LogMaxCount = maxCount;
 
             // Retrieve sorted directory listing for log file path.
-            List<string> localFiles = Directory.GetFiles(_logFolder).OrderBy(f => f).ToList();
+            List<string> localFiles = Directory.GetFiles(LogFolder).OrderBy(f => f).ToList();
             localFiles.RemoveAll(f => !f.ToLower().Contains("\\" + logName.ToLower() + "_") && !f.ToLower().EndsWith(".log"));
 
             // If any existing log file(s), select first file that is not full.
@@ -116,16 +82,16 @@ namespace SimpleLogger
                 {
                     long length = new FileInfo(localFiles[i]).Length;
 
-                    if (length < _logMaxBytes)
+                    if (length < LogMaxBytes)
                     {
-                        _logFilename = localFiles[i];
-                        _logIncrement = i;
+                        LogFilename = localFiles[i];
+                        LogIncrement = i;
                         break;
                     }
-                    else if (length >= _logMaxBytes && (i + 1) >= localFiles.Count && (i + 1) < _logMaxCount)
+                    else if (length >= LogMaxBytes && (i + 1) >= localFiles.Count && (i + 1) < LogMaxCount)
                     {
-                        _logFilename = $"{_logFolder}\\{logName}_{i + 1}.log";
-                        _logIncrement = i + 1;
+                        LogFilename = $"{LogFolder}\\{logName}_{i + 1}.log";
+                        LogIncrement = i + 1;
                         break;
                     }
                 }
@@ -134,8 +100,8 @@ namespace SimpleLogger
             // If no existing log files, formualte the first one.
             if (LogFilename == "")
             {
-                _logFilename = $"{_logFolder}\\{logName}_0.log";
-                _logIncrement = 0;
+                LogFilename = $"{LogFolder}\\{logName}_0.log";
+                LogIncrement = 0;
             }
 
             // Start the log file.
@@ -144,15 +110,15 @@ namespace SimpleLogger
             _logWriter.AutoFlush = true;
 
             // Add to log manager.
-            _logManager.Add(new Tuple<string, SimpleLog>(_logComponent, this));
+            LogManager.Add(new Tuple<string, SimpleLog>(LogComponent, this));
         }
 
         public bool Close()
         {
             try
             {
-                this.Log("Log ends.");
-                this.Log("##################################################");
+                Log("Log end.");
+                Log("##################################################");
                 _logWriter.Dispose();
                 _logStream.Dispose();
                 return true;
@@ -193,12 +159,12 @@ namespace SimpleLogger
         {
             if (!string.IsNullOrEmpty(message) && !string.IsNullOrWhiteSpace(message))
             {
-                long logSizeBytes = new FileInfo(_logFilename).Length;
+                long logSizeBytes = new FileInfo(LogFilename).Length;
 
-                if (logSizeBytes >= _logMaxBytes)
+                if (logSizeBytes >= LogMaxBytes)
                 {
                     Close();
-                    Open(_logComponent, _logFolder, _logMaxBytes, _logMaxCount);
+                    Open(LogComponent, LogFolder, LogMaxBytes, LogMaxCount);
                 }
 
                 lock (_lockObj)
@@ -211,24 +177,28 @@ namespace SimpleLogger
 
         public static void Log(string component, string message, MsgType logLevel = MsgType.INFO) 
         {
-            var logger = _logManager
+            var logger = LogManager
                 .Where(l => l.Item1.ToLower().Equals(component.ToLower()))
                 .FirstOrDefault();
 
             if (logger != null)
+            {
                 logger.Item2.Log(message, logLevel);
+            }
             else
+            {
                 throw new Exception($"Log component {component} does not exist.");
+            }
         }
 
         public void Log(Exception e, string message)
         {
-            long logSizeBytes = new FileInfo(_logFilename).Length;
+            long logSizeBytes = new FileInfo(LogFilename).Length;
 
-            if (logSizeBytes >= _logMaxBytes)
+            if (logSizeBytes >= LogMaxBytes)
             {
                 Close();
-                Open(_logComponent, _logFolder, _logMaxBytes, _logMaxCount);
+                Open(LogComponent, LogFolder, LogMaxBytes, LogMaxCount);
             }
 
             lock (_lockObj)
@@ -246,14 +216,18 @@ namespace SimpleLogger
 
         public static void Log(string component, Exception e, string message)
         {
-            var logger = _logManager
+            var logger = LogManager
                 .Where(l => l.Item1.ToLower().Equals(component.ToLower()))
                 .FirstOrDefault();
 
             if (logger != null)
+            {
                 logger.Item2.Log(e, message);
+            }
             else
+            {
                 throw new Exception($"Log component {component} does not exist.");
+            }
         }
     }
 }

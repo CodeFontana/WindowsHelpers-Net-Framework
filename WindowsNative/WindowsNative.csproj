@@ -45,7 +45,9 @@
     <Compile Include="DotNetHelpers.cs" />
     <Compile Include="FileSystem.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="Network.cs" />
     <Compile Include="NetworkAdapter.cs" />
+    <Compile Include="NumericComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registry.cs" />
   </ItemGroup>
