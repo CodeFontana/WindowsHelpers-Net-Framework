@@ -51,7 +51,7 @@ namespace WindowsNative
                         gpo.Save();
                         SimpleLog.Log(logComponent, "Refresh Windows policy...");
 
-                        ProcessAPI.RunProcessEx(
+                        Process.RunProcessEx(
                             WindowsUtility.SystemDrive + "\\Windows\\System32\\gpupdate.exe",
                             "/force",
                             WindowsUtility.SystemDrive + "\\Windows\\System32",
@@ -94,11 +94,11 @@ namespace WindowsNative
                 if (forcePermissions)
                 {
                     if (!NativeMethods.OpenProcessToken(
-                        Process.GetCurrentProcess().Handle,
+                        System.Diagnostics.Process.GetCurrentProcess().Handle,
                         NativeMethods.TOKEN_ALL_ACCESS,
                         out IntPtr hToken))
                     {
-                        SimpleLog.Log(logComponent, "Unable to open specified process token [OpenProcessToken=" + 
+                        SimpleLog.Log(logComponent, "Unable to open specified process token [OpenProcessToken=" +
                             Marshal.GetLastWin32Error().ToString() + "].");
                         return false;
                     }
@@ -195,7 +195,7 @@ namespace WindowsNative
                 {
                     SimpleLog.Log(logComponent, "Check drive [read-only]: " + d.Name);
 
-                    Tuple<long, string> result = ProcessAPI.RunProcessEx(
+                    Tuple<long, string> result = Process.RunProcessEx(
                         "chkdsk.exe",
                         d.Name.Substring(0, 2),
                         WindowsUtility.WindowsFolder + "\\System32",
