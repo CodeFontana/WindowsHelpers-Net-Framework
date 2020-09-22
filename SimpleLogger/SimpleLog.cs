@@ -187,7 +187,7 @@ namespace SimpleLogger
             }
             else
             {
-                throw new Exception($"Log component {component} does not exist.");
+                Console.WriteLine(MsgHeader(logLevel) + message);
             }
         }
 
@@ -226,7 +226,7 @@ namespace SimpleLogger
             }
             else
             {
-                throw new Exception($"Log component {component} does not exist.");
+                Console.WriteLine(MsgHeader(MsgType.ERROR) + message);
             }
         }
     }
