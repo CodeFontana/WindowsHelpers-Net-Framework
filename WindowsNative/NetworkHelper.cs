@@ -8,7 +8,7 @@ using System.Net.Sockets;
 
 namespace WindowsNative
 {
-    public static class Network
+    public static class NetworkHelper
     {
         public static Tuple<bool, List<string>> ResolveHostToIP(string logComponent,
             string hostAddress, bool hideOutput = false)

@@ -45,12 +45,13 @@
     <Compile Include="DotNetHelpers.cs" />
     <Compile Include="FileSystem.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="Network.cs" />
+    <Compile Include="NetworkHelper.cs" />
     <Compile Include="NetworkAdapter.cs" />
     <Compile Include="NumericComparer.cs" />
-    <Compile Include="Process.cs" />
+    <Compile Include="ProcessHelper.cs" />
+    <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Registry.cs" />
+    <Compile Include="RegistryHelpder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GroupPolicy\GroupPolicy.csproj">

@@ -30,7 +30,7 @@ namespace WindowsNative
                 // Is the "Remove Security Tab" Windows GPO configured?
                 // Note: If so, the current user will be unable to edit file/folder
                 //       security permissions. Lame.
-                if (Registry.ValueExists(
+                if (RegistryHelpder.ValueExists(
                     "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
                     "NoSecurityTab",
                     Microsoft.Win32.RegistryHive.CurrentUser))
@@ -51,7 +51,7 @@ namespace WindowsNative
                         gpo.Save();
                         SimpleLog.Log(logComponent, "Refresh Windows policy...");
 
-                        Process.RunProcess(logComponent,
+                        ProcessHelper.RunProcess(logComponent,
                             Environment.GetEnvironmentVariable("SystemDrive") + "\\Windows\\System32\\gpupdate.exe",
                             "/force",
                             Environment.GetEnvironmentVariable("SystemDrive") + "\\Windows\\System32",
@@ -94,7 +94,7 @@ namespace WindowsNative
                 if (forcePermissions)
                 {
                     if (!NativeMethods.OpenProcessToken(
-                        System.Diagnostics.Process.GetCurrentProcess().Handle,
+                        Process.GetCurrentProcess().Handle,
                         NativeMethods.TOKEN_ALL_ACCESS,
                         out IntPtr hToken))
                     {
@@ -195,7 +195,7 @@ namespace WindowsNative
                 {
                     SimpleLog.Log(logComponent, "Check drive [read-only]: " + d.Name);
 
-                    Tuple<long, string> result = Process.RunProcess(logComponent,
+                    Tuple<long, string> result = ProcessHelper.RunProcess(logComponent,
                         "chkdsk.exe",
                         d.Name.Substring(0, 2),
                         Environment.GetEnvironmentVariable("windir") + "\\System32",

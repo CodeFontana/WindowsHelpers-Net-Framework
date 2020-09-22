@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace WindowsNative
 {
-    public static class Process
+    public static class ProcessHelper
     {
         public static Tuple<bool, int> CreateProcessAsUser(string logComponent, IntPtr hUserToken, string appFileName, string appArgs)
         {
@@ -65,7 +65,7 @@ namespace WindowsNative
                 else
                 {
                     SimpleLog.Log(logComponent, "Created new process: " + pi.dwProcessId.ToString() + "/" + appFileName + " " + appArgs);
-                    var newProcess = System.Diagnostics.Process.GetProcessById(pi.dwProcessId);
+                    var newProcess = Process.GetProcessById(pi.dwProcessId);
 
                     try
                     {
@@ -160,7 +160,7 @@ namespace WindowsNative
                 else
                 {
                     SimpleLog.Log(logComponent, "Created new process: " + pi.dwProcessId.ToString() + "/" + appFileName + " " + appArgs);
-                    var newProcess = System.Diagnostics.Process.GetProcessById(pi.dwProcessId);
+                    var newProcess = Process.GetProcessById(pi.dwProcessId);
 
                     try
                     {
@@ -185,7 +185,7 @@ namespace WindowsNative
 
         public static string GetInstanceNameForProcessId(int processId)
         {
-            var process = System.Diagnostics.Process.GetProcessById(processId);
+            var process = Process.GetProcessById(processId);
             string processName = Path.GetFileNameWithoutExtension(process.ProcessName);
             PerformanceCounterCategory cat = new PerformanceCounterCategory("Process");
 
@@ -214,7 +214,7 @@ namespace WindowsNative
         {
             processFriendlyName = FileSystem.ParseFriendlyname(processFriendlyName);
 
-            foreach (System.Diagnostics.Process runningProcess in System.Diagnostics.Process.GetProcesses())
+            foreach (Process runningProcess in Process.GetProcesses())
             {
                 if (runningProcess.ProcessName.ToLower().Equals(processFriendlyName.ToLower()))
                 {
@@ -250,7 +250,7 @@ namespace WindowsNative
                             };
 
                             // Iterate no more than the process count, divided by 2
-                            for (int i = 0; i <= System.Diagnostics.Process.GetProcesses().Count() / 2; i++)
+                            for (int i = 0; i <= Process.GetProcesses().Count() / 2; i++)
                             {
                                 var wmiQuery = new ManagementObjectSearcher("SELECT ParentProcessId FROM Win32_Process WHERE ProcessId=" + currentID);
                                 var wmiResult = wmiQuery.Get().GetEnumerator();
@@ -278,7 +278,7 @@ namespace WindowsNative
 
                                 try
                                 {
-                                    string parentName = System.Diagnostics.Process.GetProcessById((int)parentId).ProcessName;
+                                    string parentName = Process.GetProcessById((int)parentId).ProcessName;
                                     SimpleLog.Log(logComponent, "IsProcessRunning() parent: " + parentId.ToString() + "/" + parentName);
                                     currentID = (int)parentId;
                                 }
@@ -306,7 +306,7 @@ namespace WindowsNative
             int processCount = 0;
             processFriendlyName = FileSystem.ParseFriendlyname(processFriendlyName);
 
-            foreach (System.Diagnostics.Process runningProcess in System.Diagnostics.Process.GetProcesses())
+            foreach (Process runningProcess in Process.GetProcesses())
             {
                 if (runningProcess.ProcessName.ToLower().Equals(processFriendlyName.ToLower()))
                 {
@@ -329,7 +329,7 @@ namespace WindowsNative
 
             try
             {
-                foreach (System.Diagnostics.Process runningProcess in System.Diagnostics.Process.GetProcesses())
+                foreach (Process runningProcess in Process.GetProcesses())
                 {
                     if (runningProcess.ProcessName.ToLower().Equals(friendlyOrShortName.ToLower()))
                     {
@@ -416,7 +416,7 @@ namespace WindowsNative
         {
             try
             {
-                foreach (System.Diagnostics.Process runningProcess in System.Diagnostics.Process.GetProcesses())
+                foreach (Process runningProcess in Process.GetProcesses())
                 {
                     if (runningProcess.Id == processID)
                     {
@@ -549,7 +549,7 @@ namespace WindowsNative
             string[] outputHeader = { "Process", "PID", "User", "CPU Time", "Memory", "Handles", "Threads", "Command Line" };
             runningProcesses.Add(outputHeader);
 
-            foreach (System.Diagnostics.Process p in System.Diagnostics.Process.GetProcesses())
+            foreach (Process p in Process.GetProcesses())
             {
                 try
                 {
@@ -577,7 +577,7 @@ namespace WindowsNative
             // Resolve Explicit Path of App to Run.
             // ******************************
 
-            string processName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string processName = Process.GetCurrentProcess().MainModule.FileName;
             string processPath = processName.Substring(0, processName.LastIndexOf("\\"));
 
             try
@@ -666,7 +666,7 @@ namespace WindowsNative
             // Prepare New Process.
             // ******************************
 
-            System.Diagnostics.Process p = new System.Diagnostics.Process();
+            Process p = new Process();
             List<string> combinedOutput = new List<string>();
             Thread consumeStdOut = null;
             Thread consumeStdErr = null;
@@ -822,7 +822,7 @@ namespace WindowsNative
             bool hideWindow = false,
             bool hideExecution = false)
         {
-            string processName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string processName = Process.GetCurrentProcess().MainModule.FileName;
             string processPath = processName.Substring(0, processName.LastIndexOf("\\"));
 
             if (appFileName.Contains("\\") && !appFileName.Contains(":\\"))
@@ -887,7 +887,7 @@ namespace WindowsNative
                 }
             }
 
-            System.Diagnostics.Process p = new System.Diagnostics.Process();
+            Process p = new Process();
             p.StartInfo.FileName = appFileName.Replace("\\\\", "\\");
             p.StartInfo.Arguments = arguments;
             p.StartInfo.WorkingDirectory = workingDirectory;
