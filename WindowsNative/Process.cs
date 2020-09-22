@@ -563,7 +563,7 @@ namespace WindowsNative
             return DotNetHelpers.PadListElements(runningProcesses, 1);
         }
 
-        public static Tuple<long, string> RunProcessEx(
+        public static Tuple<long, string> RunProcess(
             string logComponent,
             string appFileName,
             string arguments = "",
@@ -577,79 +577,59 @@ namespace WindowsNative
             // Resolve Explicit Path of App to Run.
             // ******************************
 
+            string processName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string processPath = processName.Substring(0, processName.LastIndexOf("\\"));
+
             try
             {
-                // Is a relative path to the filename provided?
                 if (appFileName.Contains("\\") && !appFileName.Contains(":\\"))
                 {
-                    // Relative path starts with a backslash?
                     if (appFileName.StartsWith("\\"))
                     {
-                        // Pre-pend our path (WITHOUT a trailing '\')
-                        appFileName = AppAPI.ProcessFilePath + appFileName;
+                        appFileName = processPath + appFileName;
                     }
                     else
                     {
-                        // Pre-pend our path (WITH a trailing '\')
-                        appFileName = AppAPI.ProcessFilePath + "\\" + appFileName;
+                        appFileName = processPath + "\\" + appFileName;
                     }
                 }
                 else if (!appFileName.Contains("\\") && !appFileName.Contains(":\\"))
                 {
-                    // Pre-pend our path (WITH a trailing '\')
-                    appFileName = AppAPI.ProcessFilePath + "\\" + appFileName;
+                    appFileName = processPath + "\\" + appFileName;
                 }
 
-                // Application executable exists? Note: File.Exists() accepts relative paths via current working directory
                 if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
                 {
-                    // Take a copy of the original string
                     string origAppToExecute = appFileName;
 
-                    // Does the filename contain a backslash (e.g. path to the executable)
                     if (appFileName.Contains("\\"))
                     {
-                        // As file does not exist, remove the path to the executable
                         appFileName = appFileName.Substring(appFileName.LastIndexOf("\\") + 1);
                     }
 
-                    // Read PATH enironment variable
                     var pathValues = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
 
-                    // Iterate PATH variable
                     foreach (var path in pathValues.Split(';'))
                     {
-                        // Build full filename using PATH entry
                         var pathFilename = Path.Combine(path, appFileName);
 
-                        // Does this file exist?
                         if (File.Exists(pathFilename))
                         {
-                            // Assign it
                             appFileName = pathFilename;
-
-                            // Break the iteration
                             break;
                         }
                     }
 
-                    // One last check
                     if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
                     {
-                        // Write debug
-                        SimpleLog.Log(logComponent, "ERROR: Application not found [" + origAppToExecute + "].");
-
-                        // Return
+                        SimpleLog.Log(logComponent, "Application not found [" + origAppToExecute + "].", SimpleLog.MsgType.ERROR);
                         return Tuple.Create((long)-1, "");
                     }
                 }
             }
             catch (Exception e)
             {
-                // Write exception.
                 SimpleLog.Log(logComponent, e, $"Failed to resolve explicit path for app [{appFileName}].");
-
-                // Return.
                 return Tuple.Create((long)-1, "");
             }
 
@@ -659,35 +639,26 @@ namespace WindowsNative
 
             try
             {
-                // Working directory provided?
                 if (workingDirectory == null || workingDirectory.Equals(""))
                 {
-                    // Does the specified application contain a path?
                     if (appFileName.Contains("\\"))
                     {
-                        // Take the working directory from the application path
                         workingDirectory = FileSystem.ParsePath(appFileName);
 
-                        // Is it valid?
                         if (!Directory.Exists(workingDirectory))
                         {
-                            // Just use our processes working directory
-                            workingDirectory = AppAPI.ProcessFilePath;
+                            workingDirectory = processPath;
                         }
                     }
                     else
                     {
-                        // Just use our processes working directory
-                        workingDirectory = AppAPI.ProcessFilePath;
+                        workingDirectory = processPath;
                     }
                 }
             }
             catch (Exception e)
             {
-                // Write exception.
                 SimpleLog.Log(logComponent, e, $"Failed to resolve working directory for app [{appFileName}].");
-
-                // Return.
                 return Tuple.Create((long)-1, "");
             }
 
@@ -695,22 +666,14 @@ namespace WindowsNative
             // Prepare New Process.
             // ******************************
 
-            // Create new process.
             System.Diagnostics.Process p = new System.Diagnostics.Process();
-
-            // String for storing combined STDOUT+STDERR from external process.
             List<string> combinedOutput = new List<string>();
-
-            // Async threads for consuming STDOUT/STDERR.
             Thread consumeStdOut = null;
             Thread consumeStdErr = null;
-
-            // Cancellation source for async threads.
             var cts = new CancellationTokenSource();
 
             try
             {
-                // Configure a new process.
                 p.StartInfo.FileName = appFileName.Replace("\\\\", "\\");
                 p.StartInfo.Arguments = arguments;
                 p.StartInfo.WorkingDirectory = workingDirectory;
@@ -720,26 +683,20 @@ namespace WindowsNative
                 p.StartInfo.CreateNoWindow = hideWindow; // Passed into function
                 p.StartInfo.Verb = "runas"; // Elevate (note sure if this works with UseShellExecute=false)
 
-                // Is STDOUT/STDERR being suppressed?
                 if (hideStreamOutput)
                 {
                     p.StartInfo.RedirectStandardOutput = false; // Don't redirect STDOUT.
                     p.StartInfo.RedirectStandardError = false; // Don't redirect STDERR.
                 }
 
-                // Hide execution?
                 if (!hideExecution)
                 {
-                    // Write debug.
                     SimpleLog.Log(logComponent, "Create process: " + appFileName + " " + arguments + " [Timeout=" + execTimeoutSeconds.ToString() + "s]");
                 }
             }
             catch (Exception e)
             {
-                // Write exception.
                 SimpleLog.Log(logComponent, e, $"Failed to prepare new process for execution [{appFileName}].");
-
-                // Return.
                 return Tuple.Create((long)-1, "");
             }
 
@@ -749,10 +706,8 @@ namespace WindowsNative
 
             try
             {
-                // Start the process.
                 p.Start();
 
-                // Capture STDOUT/STDERR?
                 if (!hideStreamOutput)
                 {
                     // Create async threads for consuming the STDOUT/STDERR streams.
@@ -767,17 +722,13 @@ namespace WindowsNative
                         await ConsumeReader(logComponent, p.StandardError, combinedOutput, hideStreamOutput, hideExecution, cts.Token);
                     });
 
-                    // Start async threads.
                     consumeStdOut.Start();
                     consumeStdErr.Start();
                 }
             }
             catch (Exception e)
             {
-                // Write exception.
                 SimpleLog.Log(logComponent, e, "Failed to start new process.");
-
-                // Return.
                 return Tuple.Create((long)-1, "");
             }
 
@@ -787,28 +738,20 @@ namespace WindowsNative
 
             try
             {
-                // Timeout specified?
                 if (execTimeoutSeconds >= 0)
                 {
-                    // Adjust timeout (seconds --> milliseconds).
                     execTimeoutSeconds *= 1000;
                 }
 
-                // Wait the specified timeout for the process to exit.
                 p.WaitForExit(execTimeoutSeconds);
 
-                // Check if the process is still running?
                 if (!p.HasExited)
                 {
-                    // Timeout breach -- kill the process.
                     p.Kill();
-
-                    // Write debug.
-                    SimpleLog.Log(logComponent, "Killed: " + FileSystem.ParseShortname(appFileName) + " [Timeout breached]");
+                    SimpleLog.Log(logComponent, "Killed: " + FileSystem.ParseShortname(appFileName) + " [Timeout breached]", SimpleLog.MsgType.ERROR);
                 }
                 else
                 {
-                    // Is the child process a batch file?
                     if (appFileName.ToLower().EndsWith(".bat") || appFileName.ToLower().EndsWith(".cmd"))
                     {
                         // Signal task cancellation for STDOUT/STDERR streams.
@@ -818,34 +761,24 @@ namespace WindowsNative
                         cts.Cancel();
                     }
 
-                    // Wait for async threads to stop.
                     if (consumeStdOut != null) consumeStdOut.Join();
                     if (consumeStdErr != null) consumeStdErr.Join();
                 }
 
-                // Save the exit code.
                 int ExitCode = p.ExitCode;
 
-                // Hide execution?
                 if (!hideExecution)
                 {
-                    // Write debug.
                     SimpleLog.Log(logComponent, FileSystem.ParseShortname(appFileName) + " return code: " + ExitCode.ToString());
                 }
 
-                // Dispose resources.
                 cts.Dispose();
                 p.Dispose();
-
-                // Return tuple of (Return Code, Copy of Combined output)
                 return Tuple.Create((long)ExitCode, String.Join(Environment.NewLine, combinedOutput.ToList()));
             }
             catch (Exception e)
             {
-                // Write exception.
                 SimpleLog.Log(logComponent, e, "New process monitoring failure.");
-
-                // Return.
                 return Tuple.Create((long)-1, "");
             }
         }
@@ -868,7 +801,7 @@ namespace WindowsNative
 
                     if (!hideStreamOutput && !hideExecution)
                     {
-                        Logger.WriteDebug(textLine);
+                        SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
                     }
                 }
 
@@ -889,95 +822,71 @@ namespace WindowsNative
             bool hideWindow = false,
             bool hideExecution = false)
         {
-            // Is a relative path to the filename provided?
+            string processName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string processPath = processName.Substring(0, processName.LastIndexOf("\\"));
+
             if (appFileName.Contains("\\") && !appFileName.Contains(":\\"))
             {
-                // Relative path starts with a backslash?
                 if (appFileName.StartsWith("\\"))
                 {
-                    // Pre-pend our path (WITHOUT a trailing '\')
-                    appFileName = AppAPI.ProcessFilePath + appFileName;
+                    appFileName = processPath + appFileName;
                 }
                 else
                 {
-                    // Pre-pend our path (WITH a trailing '\')
-                    appFileName = AppAPI.ProcessFilePath + "\\" + appFileName;
+                    appFileName = processPath + "\\" + appFileName;
                 }
             }
             else if (!appFileName.Contains("\\") && !appFileName.Contains(":\\"))
             {
-                // Pre-pend our path (WITH a trailing '\')
-                appFileName = AppAPI.ProcessFilePath + "\\" + appFileName;
+                appFileName = processPath + "\\" + appFileName;
             }
 
-            // Application executable exists? Note: File.Exists() accepts relative paths via current working directory
             if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
             {
-                // Take a copy of the original string
                 string origAppToExecute = appFileName;
 
-                // Does the filename contain a backslash (e.g. path to the executable)
                 if (appFileName.Contains("\\"))
                 {
-                    // As file does not exist, remove the path to the executable
                     appFileName = appFileName.Substring(appFileName.LastIndexOf("\\") + 1);
                 }
 
-                // Read PATH enironment variable
                 var pathValues = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
 
-                // Iterate PATH variable
                 foreach (var path in pathValues.Split(';'))
                 {
-                    // Build full filename using PATH entry
                     var pathFilename = Path.Combine(path, appFileName);
 
-                    // Does this file exist?
                     if (File.Exists(pathFilename))
                     {
-                        // Assign it
                         appFileName = pathFilename;
-
-                        // Break the iteration
                         break;
                     }
                 }
 
-                // One last check
                 if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
                 {
-                    // Write debug
-                    SimpleLog.Log(logComponent, "ERROR: Application not found [" + origAppToExecute + "].");
-
-                    // Return
+                    SimpleLog.Log(logComponent, "Application not found [" + origAppToExecute + "].", SimpleLog.MsgType.ERROR);
                     return false;
                 }
             }
 
-            // Working directory provided?
             if (workingDirectory == null || workingDirectory.Equals(""))
             {
-                // Does the specified application contain a path?
                 if (appFileName.Contains("\\"))
                 {
-                    // Take the working directory from the application path
                     workingDirectory = FileSystem.ParsePath(appFileName);
 
-                    // Is it valid?
                     if (!Directory.Exists(workingDirectory))
                     {
-                        // Just use our processes working directory
-                        workingDirectory = AppAPI.ProcessFilePath;
+                        workingDirectory = processPath;
                     }
                 }
                 else
                 {
-                    // Just use our processes working directory
-                    workingDirectory = AppAPI.ProcessFilePath;
+                    workingDirectory = processPath;
                 }
             }
 
-            // Create and configure a new process
             System.Diagnostics.Process p = new System.Diagnostics.Process();
             p.StartInfo.FileName = appFileName.Replace("\\\\", "\\");
             p.StartInfo.Arguments = arguments;
@@ -986,19 +895,14 @@ namespace WindowsNative
             p.StartInfo.CreateNoWindow = hideWindow; // Passed into function
             p.StartInfo.Verb = "runas"; // Elevate (note sure if this works with UseShellExecute=false)
 
-            // Hide execution?
             if (!hideExecution)
             {
-                // Write debug
                 SimpleLog.Log(logComponent, "Execute [Detached]: " + appFileName + " " + arguments);
             }
 
             try
             {
-                // Start the process
                 p.Start();
-
-                // Write debug
                 SimpleLog.Log(logComponent, "Created detached process: " + p.Id.ToString() + "/" + appFileName.Replace("\\\\", "\\") + " " + arguments);
 
                 // Brief delay for app startup, before continuing.
@@ -1013,28 +917,20 @@ namespace WindowsNative
                 // reference, in case anyone gets any bright ideas.
                 /*try
                 {
-                    // For UI apps, wait for idle state, before continuing.
                     p.WaitForInputIdle(2000);
-
-                    // Wait short delay before continuing.
                     p.WaitForExit(3000);
                 }
                 catch (InvalidOperationException)
                 {
-                    // Must be a non-UI app, just give it a sec to start.
                     Thread.Sleep(5000);
                 }*/
             }
             catch (Exception e)
             {
-                // Write exception.
                 SimpleLog.Log(logComponent, e, "Failed to start new detached process.");
-
-                // Return.
                 return false;
             }
 
-            // Return.
             return true;
         }
     }

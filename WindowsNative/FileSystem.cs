@@ -51,10 +51,10 @@ namespace WindowsNative
                         gpo.Save();
                         SimpleLog.Log(logComponent, "Refresh Windows policy...");
 
-                        Process.RunProcessEx(
-                            WindowsUtility.SystemDrive + "\\Windows\\System32\\gpupdate.exe",
+                        Process.RunProcess(logComponent,
+                            Environment.GetEnvironmentVariable("SystemDrive") + "\\Windows\\System32\\gpupdate.exe",
                             "/force",
-                            WindowsUtility.SystemDrive + "\\Windows\\System32",
+                            Environment.GetEnvironmentVariable("SystemDrive") + "\\Windows\\System32",
                             180, true, true, true);
                     }
                     catch (Exception e)
@@ -195,10 +195,10 @@ namespace WindowsNative
                 {
                     SimpleLog.Log(logComponent, "Check drive [read-only]: " + d.Name);
 
-                    Tuple<long, string> result = Process.RunProcessEx(
+                    Tuple<long, string> result = Process.RunProcess(logComponent,
                         "chkdsk.exe",
                         d.Name.Substring(0, 2),
-                        WindowsUtility.WindowsFolder + "\\System32",
+                        Environment.GetEnvironmentVariable("windir") + "\\System32",
                         1200, true, false, false);
 
                     if (result.Item2.ToLower().Contains("windows has scanned the file system and found no problems"))
