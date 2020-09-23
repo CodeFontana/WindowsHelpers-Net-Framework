@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace WindowsNative
 {
-    public static class RegistryHelpder
+    public static class RegistryHelper
     {
         public static void CopyKey(string logComponent, RegistryKey sourceKey, RegistryKey destKey)
         {

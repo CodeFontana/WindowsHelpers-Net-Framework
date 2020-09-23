@@ -14,7 +14,7 @@ using System.Text;
 
 namespace WindowsNative
 {
-    public static class FileSystem
+    public static class FileSystemHelper
     {
         public static bool AddDirectorySecurity(string logComponent,
             string fileOrFolder,
@@ -30,7 +30,7 @@ namespace WindowsNative
                 // Is the "Remove Security Tab" Windows GPO configured?
                 // Note: If so, the current user will be unable to edit file/folder
                 //       security permissions. Lame.
-                if (RegistryHelpder.ValueExists(
+                if (RegistryHelper.ValueExists(
                     "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
                     "NoSecurityTab",
                     Microsoft.Win32.RegistryHive.CurrentUser))
@@ -103,7 +103,7 @@ namespace WindowsNative
                         return false;
                     }
 
-                    if (!WindowsUtility.EnablePrivilege(hToken, NativeMethods.SE_TAKE_OWNERSHIP_NAME))
+                    if (!WindowsHelper.EnablePrivilege(logComponent, hToken, NativeMethods.SE_TAKE_OWNERSHIP_NAME))
                     {
                         SimpleLog.Log(logComponent, "Failed to enable privilege [SeTakeOwnershipPrivilege].", SimpleLog.MsgType.ERROR);
                         Marshal.FreeHGlobal(hToken);
@@ -252,7 +252,7 @@ namespace WindowsNative
 
                     if (sizeInBytes != null)
                     {
-                        SimpleLog.Log(logComponent, "  Size: " + FileSystem.BytesToReadableValue(long.Parse(sizeInBytes.ToString().Trim())));
+                        SimpleLog.Log(logComponent, "  Size: " + FileSystemHelper.BytesToReadableValue(long.Parse(sizeInBytes.ToString().Trim())));
                     }
 
                     if (smart != null)
@@ -972,7 +972,7 @@ namespace WindowsNative
 
             try
             {
-                paddedTable = DotNetHelpers.PadListElements(foldersAndFiles, 5);
+                paddedTable = DotNetHelper.PadListElements(foldersAndFiles, 5);
             }
             catch (Exception e)
             {

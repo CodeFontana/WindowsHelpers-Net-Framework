@@ -24,7 +24,7 @@ namespace WindowsNative
                 userId.Dispose();
 
                 // Obtain duplicated user token (elevated if UAC is turned on/enabled).
-                IntPtr hDuplicateToken = WindowsUtility.DuplicateToken(logComponent, hUserToken);
+                IntPtr hDuplicateToken = WindowsHelper.DuplicateToken(logComponent, hUserToken);
 
                 // Initialize process info and startup info
                 NativeMethods.PROCESS_INFORMATION pi = new NativeMethods.PROCESS_INFORMATION();
@@ -51,7 +51,7 @@ namespace WindowsNative
                     (uint)NativeMethods.CreateProcessFlags.CREATE_UNICODE_ENVIRONMENT |
                     (uint)NativeMethods.CreateProcessFlags.CREATE_NEW_CONSOLE,
                     hEnvironment,
-                    FileSystem.ParsePath(appFileName),
+                    FileSystemHelper.ParsePath(appFileName),
                     ref si,
                     out pi))
                 {
@@ -97,7 +97,7 @@ namespace WindowsNative
             try
             {
                 SimpleLog.Log(logComponent, "Create process for: " + userId.Name);
-                List<Tuple<uint, string>> userSessions = WindowsUtility.GetUserSessions(logComponent);
+                List<Tuple<uint, string>> userSessions = WindowsHelper.GetUserSessions(logComponent);
                 int sessionId = -1;
 
                 foreach (Tuple<uint, string> logonSession in userSessions)
@@ -122,7 +122,7 @@ namespace WindowsNative
                 }
 
                 // Obtain duplicated user token (elevated if UAC is turned on/enabled)
-                IntPtr hDuplicateToken = WindowsUtility.DuplicateToken(logComponent, hUserToken, (uint)sessionId);
+                IntPtr hDuplicateToken = WindowsHelper.DuplicateToken(logComponent, hUserToken, (uint)sessionId);
                 Marshal.FreeHGlobal(hUserToken);
 
                 // Initialize process info and startup info
@@ -150,7 +150,7 @@ namespace WindowsNative
                     (uint)NativeMethods.CreateProcessFlags.CREATE_UNICODE_ENVIRONMENT |
                     (uint)NativeMethods.CreateProcessFlags.CREATE_NEW_CONSOLE,
                     hEnvironment,
-                    FileSystem.ParsePath(appFileName),
+                    FileSystemHelper.ParsePath(appFileName),
                     ref si,
                     out pi))
                 {
@@ -212,7 +212,7 @@ namespace WindowsNative
 
         public static bool IsProcessRunning(string logComponent, string processFriendlyName, bool moreInfo = false)
         {
-            processFriendlyName = FileSystem.ParseFriendlyname(processFriendlyName);
+            processFriendlyName = FileSystemHelper.ParseFriendlyname(processFriendlyName);
 
             foreach (Process runningProcess in Process.GetProcesses())
             {
@@ -304,7 +304,7 @@ namespace WindowsNative
         public static int IsProcessRunningCount(string processFriendlyName)
         {
             int processCount = 0;
-            processFriendlyName = FileSystem.ParseFriendlyname(processFriendlyName);
+            processFriendlyName = FileSystemHelper.ParseFriendlyname(processFriendlyName);
 
             foreach (Process runningProcess in Process.GetProcesses())
             {
@@ -560,7 +560,7 @@ namespace WindowsNative
                 catch (Exception) { }
             }
 
-            return DotNetHelpers.PadListElements(runningProcesses, 1);
+            return DotNetHelper.PadListElements(runningProcesses, 1);
         }
 
         public static Tuple<long, string> RunProcess(
@@ -643,7 +643,7 @@ namespace WindowsNative
                 {
                     if (appFileName.Contains("\\"))
                     {
-                        workingDirectory = FileSystem.ParsePath(appFileName);
+                        workingDirectory = FileSystemHelper.ParsePath(appFileName);
 
                         if (!Directory.Exists(workingDirectory))
                         {
@@ -748,7 +748,7 @@ namespace WindowsNative
                 if (!p.HasExited)
                 {
                     p.Kill();
-                    SimpleLog.Log(logComponent, "Killed: " + FileSystem.ParseShortname(appFileName) + " [Timeout breached]", SimpleLog.MsgType.ERROR);
+                    SimpleLog.Log(logComponent, "Killed: " + FileSystemHelper.ParseShortname(appFileName) + " [Timeout breached]", SimpleLog.MsgType.ERROR);
                 }
                 else
                 {
@@ -769,7 +769,7 @@ namespace WindowsNative
 
                 if (!hideExecution)
                 {
-                    SimpleLog.Log(logComponent, FileSystem.ParseShortname(appFileName) + " return code: " + ExitCode.ToString());
+                    SimpleLog.Log(logComponent, FileSystemHelper.ParseShortname(appFileName) + " return code: " + ExitCode.ToString());
                 }
 
                 cts.Dispose();
@@ -874,7 +874,7 @@ namespace WindowsNative
             {
                 if (appFileName.Contains("\\"))
                 {
-                    workingDirectory = FileSystem.ParsePath(appFileName);
+                    workingDirectory = FileSystemHelper.ParsePath(appFileName);
 
                     if (!Directory.Exists(workingDirectory))
                     {

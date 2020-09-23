@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WindowsNative
 {
-    public static class DotNetHelpers
+    public static class DotNetHelper
     {
         public static bool IsHexChar(char c)
         {

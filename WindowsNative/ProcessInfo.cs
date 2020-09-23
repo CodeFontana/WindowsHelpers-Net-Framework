@@ -23,9 +23,9 @@ namespace WindowsNative
         public ProcessInfo(Process p)
         {
             ProcessName = p.MainModule.FileName;
-            ProcessShortName = FileSystem.ParseShortname(ProcessName);
+            ProcessShortName = FileSystemHelper.ParseShortname(ProcessName);
             ProcessFriendlyName = p.ProcessName;
-            ProcessFilePath = FileSystem.ParsePath(ProcessName);
+            ProcessFilePath = FileSystemHelper.ParsePath(ProcessName);
             PID = p.Id;
             UserName = GetProcessOwner(p.Handle);
             CPUTime = p.TotalProcessorTime.ToString().Substring(0, 11);
@@ -54,7 +54,7 @@ namespace WindowsNative
                 PID.ToString(),
                 UserName,
                 CPUTime,
-                FileSystem.BytesToReadableValue(NumBytes),
+                FileSystemHelper.BytesToReadableValue(NumBytes),
                 HandleCount.ToString(),
                 ThreadCount.ToString(),
                 ProcessName + " " + CommandLineArgs };

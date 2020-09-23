@@ -5,7 +5,7 @@ using System.Security.Principal;
 
 namespace WindowsNative
 {
-    class NativeMethods
+    public class NativeMethods
     {
         // ******************************
         // External Windows Functions.
