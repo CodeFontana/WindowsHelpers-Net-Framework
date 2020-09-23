@@ -45,12 +45,6 @@ namespace SimpleLogger
             string friendlyName = shortName.Substring(0, shortName.LastIndexOf("."));
             string processPath = processName.Substring(0, processName.LastIndexOf("\\"));
 
-            // DEBUG
-            Console.WriteLine(processName);
-            Console.WriteLine(shortName);
-            Console.WriteLine(friendlyName);
-            Console.WriteLine(processPath);
-
             // Resolve path to store log file.
             if (logPath == null)
             {
@@ -98,7 +92,7 @@ namespace SimpleLogger
             }
 
             // If no existing log files, formualte the first one.
-            if (LogFilename == "")
+            if (LogFilename == null)
             {
                 LogFilename = $"{LogFolder}\\{logName}_0.log";
                 LogIncrement = 0;

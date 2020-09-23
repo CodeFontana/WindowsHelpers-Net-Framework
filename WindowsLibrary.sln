@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsNative", "WindowsNat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupPolicy", "GroupPolicy\GroupPolicy.csproj", "{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SandboxApp", "SandboxApp\SandboxApp.csproj", "{7FB1822B-4DB4-444A-9F02-1FB2FA67B0C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FB1822B-4DB4-444A-9F02-1FB2FA67B0C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FB1822B-4DB4-444A-9F02-1FB2FA67B0C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FB1822B-4DB4-444A-9F02-1FB2FA67B0C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FB1822B-4DB4-444A-9F02-1FB2FA67B0C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
