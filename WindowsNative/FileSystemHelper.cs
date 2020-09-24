@@ -252,7 +252,7 @@ namespace WindowsNative
 
                     if (sizeInBytes != null)
                     {
-                        SimpleLog.Log(logComponent, "  Size: " + FileSystemHelper.BytesToReadableValue(long.Parse(sizeInBytes.ToString().Trim())));
+                        SimpleLog.Log(logComponent, "  Size: " + BytesToReadableValue(long.Parse(sizeInBytes.ToString().Trim())));
                     }
 
                     if (smart != null)
