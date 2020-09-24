@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Threading;
 
 namespace WindowsNative
 {
     public static class DotNetHelper
     {
+        private static bool bacon = false;
+
         public static bool IsHexChar(char c)
         {
             if (int.TryParse(c.ToString(), out int result) && result >= 0 && result <= 9)
@@ -127,6 +131,64 @@ namespace WindowsNative
             }
 
             return true;
+        }
+
+        public static string LoremIpsum(int minWords = 6, int maxWords = 20, int minSentences = 1, int maxSentences = 6)
+        {
+            var words = new[] {"bacon", "ipsum", "dolor", "amet", "bresola", "tempor", "strip",
+                "leberkas", "excepteur", "irure", "hamburger", "alcatra", "veniam", "turkey",
+                "est", "exercitation", "in", "brian", "sirloin", "chunk", "tri-tip", "salami", 
+                "steak", "anim", "chislic", "commodo", "sint", "pastrami", "lorem", "chuck",
+                "exercitation", "sunt", "pork", "qui", "chicken", "minim", "voluptate", "ribeye",
+                "laborum", "andouille", "elit", "spare ribs", "anim", "cow", "id", "ea", "meatloaf",
+                "boudin", "capicola", "adipiscing", "tail", "pork", "belly", "culpa", "shoulder",
+                "drumstick", "buffalo", "prochetta", "esse", "beef ribs", "ham hock", "ham", "hock",
+                "Consectetur", "occaecat", "fatback", "quis", "fugiat", "biltong", "t-bone",
+                "kielbasa", "flank", "voluptate", "pastrami", "ut", "in", "commodo", "adipisicing",
+                "proident", "bresaola", "non", "leberkas", "turducken", "enim", "meatball", "laborum",
+                "nostrud", "strip steak", "officia", "short ribs", "nulla", "ham", "incididunt, " +
+                "velit", "do", "ex", "dolore", "sunt", "nostrud", "mollit", "bacon", "est",
+                "reprehenderit", "landjaeger", "grankfurter", "shoulder", "ground", "round", 
+                "swine", "pariatur", "susage tri-tip", "aute", "chicken tenderloin", "consequat", 
+                "venison", "pork belly", "pig tongue", "brisket", "picanha", "ball", "tip",
+                "corned beef" };
+
+            var rand = new Random();
+            int numSentences = rand.Next(maxSentences - minSentences) + minSentences + 1;
+            int numWords = rand.Next(maxWords - minWords) + minWords + 1;
+            StringBuilder result = new StringBuilder();
+            CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+            TextInfo textInfo = cultureInfo.TextInfo;
+
+            if (!bacon)
+            {
+                result.Append("Bacon ipsum dolor amet ");
+                bacon = true;
+            }
+
+            for (int s = 0; s < numSentences; s++)
+            {
+                for (int w = 0; w < numWords; w++)
+                {
+                    if (w == 0)
+                    { 
+                        result.Append(textInfo.ToTitleCase(words[rand.Next(words.Length)]));
+                    }
+                    else
+                    {
+                        result.Append(words[rand.Next(words.Length)]);
+                    }
+                    
+                    if (w < numWords - 1)
+                    {
+                        result.Append(" ");
+                    }
+                }
+
+                result.Append(". ");
+            }
+
+            return result.ToString();
         }
 
         public static string PadListElements(List<string[]> inputList, int columnPadding = 1)

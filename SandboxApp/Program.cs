@@ -1,5 +1,4 @@
-﻿using SimpleLogger;
-using System;
+﻿using System;
 
 namespace SandboxApp
 {
@@ -7,9 +6,10 @@ namespace SandboxApp
     {
         static void Main(string[] args)
         {
-            SimpleLog mainLog = new SimpleLog("SandboxApp");
-            mainLog.Log("Hello, world!");
-            mainLog.Close();
+            // Todo: Sandbox testing code here!
+            // ...
+
+            // Press any key to continue...
             Console.ReadLine();
         }
     }

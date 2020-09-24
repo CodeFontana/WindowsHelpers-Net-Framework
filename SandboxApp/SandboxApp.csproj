@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LogTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -53,6 +54,10 @@
     <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj">
       <Project>{1C1CF399-1E5C-48CA-8F55-0B4156C8F19F}</Project>
       <Name>SimpleLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WindowsNative\WindowsNative.csproj">
+      <Project>{8C5E53AF-8775-46C7-AD36-B1615A5E8A9E}</Project>
+      <Name>WindowsNative</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
