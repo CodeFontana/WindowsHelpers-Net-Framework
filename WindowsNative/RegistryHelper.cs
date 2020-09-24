@@ -215,7 +215,7 @@ namespace WindowsNative
             string childHive = regPath.First();
             string parentKeyName = String.Join("\\", regPath.Skip(1).Reverse().Skip(1).Reverse());
 
-            // Local function for mapping hiveName(str) --> hiveName(registry)
+            // Local function for mapping hiveName(str) --> hiveName(registry).
             RegistryHive GetHive()
             {
                 if (childHive.Equals("HKEY_CLASSES_ROOT", StringComparison.OrdinalIgnoreCase))
@@ -454,7 +454,6 @@ namespace WindowsNative
             }
             catch (Exception)
             {
-                // Return.
                 return false;
             }
         }
