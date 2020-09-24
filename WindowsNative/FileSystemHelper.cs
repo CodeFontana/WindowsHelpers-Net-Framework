@@ -630,12 +630,12 @@ namespace WindowsNative
                                     }
                                 }
 
-                                // Attempt to rename file
+                                // Attempt to rename file.
                                 // --> This may or may not succeed depending on type of
                                 //     lock on the file.
                                 File.Move(fileName, deleteFilename);
 
-                                // Schedule deletion on next reboot
+                                // Schedule deletion on next reboot.
                                 bool scheduleDeleteion = NativeMethods.MoveFileEx(
                                     deleteFilename,
                                     null,
@@ -645,7 +645,7 @@ namespace WindowsNative
                             }
                             catch (Exception)
                             {
-                                // Schedule in-place deletion on next reboot
+                                // Schedule in-place deletion on next reboot.
                                 NativeMethods.MoveFileEx(
                                     fileName,
                                     null,
