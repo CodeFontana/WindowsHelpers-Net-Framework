@@ -26,7 +26,7 @@ namespace WindowsNative
                 // Obtain duplicated user token (elevated if UAC is turned on/enabled).
                 IntPtr hDuplicateToken = WindowsHelper.DuplicateToken(logComponent, hUserToken);
 
-                // Initialize process info and startup info
+                // Initialize process info and startup info.
                 NativeMethods.PROCESS_INFORMATION pi = new NativeMethods.PROCESS_INFORMATION();
                 NativeMethods.STARTUPINFO si = new NativeMethods.STARTUPINFO();
                 si.cb = Marshal.SizeOf(si);
@@ -121,11 +121,11 @@ namespace WindowsNative
                     return false;
                 }
 
-                // Obtain duplicated user token (elevated if UAC is turned on/enabled)
+                // Obtain duplicated user token (elevated if UAC is turned on/enabled).
                 IntPtr hDuplicateToken = WindowsHelper.DuplicateToken(logComponent, hUserToken, (uint)sessionId);
                 Marshal.FreeHGlobal(hUserToken);
 
-                // Initialize process info and startup info
+                // Initialize process info and startup info.
                 NativeMethods.PROCESS_INFORMATION pi = new NativeMethods.PROCESS_INFORMATION();
                 NativeMethods.STARTUPINFO si = new NativeMethods.STARTUPINFO();
                 si.cb = Marshal.SizeOf(si);
@@ -189,7 +189,7 @@ namespace WindowsNative
             string processName = Path.GetFileNameWithoutExtension(process.ProcessName);
             PerformanceCounterCategory cat = new PerformanceCounterCategory("Process");
 
-            // Get all instances that match the process by name
+            // Get all instances that match the process by name.
             string[] instances = cat.GetInstanceNames()
                 .Where(inst => inst.StartsWith(processName))
                 .ToArray();
@@ -249,7 +249,7 @@ namespace WindowsNative
                                 (uint)currentID
                             };
 
-                            // Iterate no more than the process count, divided by 2
+                            // Iterate no more than the process count, divided by 2.
                             for (int i = 0; i <= Process.GetProcesses().Count() / 2; i++)
                             {
                                 var wmiQuery = new ManagementObjectSearcher("SELECT ParentProcessId FROM Win32_Process WHERE ProcessId=" + currentID);
@@ -582,6 +582,7 @@ namespace WindowsNative
 
             try
             {
+                // Prepend relative path with current process path.
                 if (appFileName.Contains("\\") && !appFileName.Contains(":\\"))
                 {
                     if (appFileName.StartsWith("\\"))
@@ -598,10 +599,14 @@ namespace WindowsNative
                     appFileName = processPath + "\\" + appFileName;
                 }
 
+                // Application executable doesn't exists?
+                // Note: File.Exists() accepts relative paths via current working directory.
                 if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
                 {
+                    // Take a copy of the original string.
                     string origAppToExecute = appFileName;
 
+                    // As file doesn't exist, strip away the path.
                     if (appFileName.Contains("\\"))
                     {
                         appFileName = appFileName.Substring(appFileName.LastIndexOf("\\") + 1);
@@ -609,6 +614,7 @@ namespace WindowsNative
 
                     var pathValues = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
 
+                    // Is this application available on the system PATH?
                     foreach (var path in pathValues.Split(';'))
                     {
                         var pathFilename = Path.Combine(path, appFileName);
@@ -620,6 +626,7 @@ namespace WindowsNative
                         }
                     }
 
+                    // Last chance.
                     if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
                     {
                         SimpleLog.Log(logComponent, "Application not found [" + origAppToExecute + "].", SimpleLog.MsgType.ERROR);
@@ -670,7 +677,7 @@ namespace WindowsNative
             List<string> combinedOutput = new List<string>();
             Thread consumeStdOut = null;
             Thread consumeStdErr = null;
-            var cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource(); // Needed for batch files, see usage below.
 
             try
             {

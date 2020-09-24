@@ -132,7 +132,7 @@ namespace WindowsNative
                 return false;
             }
 
-            // Return true, only if each octet can be successfully parsed as an 8-bit unsigned integer (byte)
+            // Return true, only if each octet can be successfully parsed as an 8-bit unsigned integer (byte).
             byte tempForParsing;
             return splitValues.All(r => byte.TryParse(r, out tempForParsing));
         }
