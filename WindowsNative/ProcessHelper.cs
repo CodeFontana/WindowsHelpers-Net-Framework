@@ -832,6 +832,7 @@ namespace WindowsNative
             string processName = Process.GetCurrentProcess().MainModule.FileName;
             string processPath = processName.Substring(0, processName.LastIndexOf("\\"));
 
+            // Prepend relative path with current process path.
             if (appFileName.Contains("\\") && !appFileName.Contains(":\\"))
             {
                 if (appFileName.StartsWith("\\"))
@@ -848,10 +849,14 @@ namespace WindowsNative
                 appFileName = processPath + "\\" + appFileName;
             }
 
+            // Application executable doesn't exists?
+            // Note: File.Exists() accepts relative paths via current working directory.
             if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
             {
+                // Take a copy of the original string.
                 string origAppToExecute = appFileName;
 
+                // As file doesn't exist, strip away the path.
                 if (appFileName.Contains("\\"))
                 {
                     appFileName = appFileName.Substring(appFileName.LastIndexOf("\\") + 1);
@@ -859,6 +864,7 @@ namespace WindowsNative
 
                 var pathValues = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
 
+                // Is this application available on the system PATH?
                 foreach (var path in pathValues.Split(';'))
                 {
                     var pathFilename = Path.Combine(path, appFileName);
@@ -870,6 +876,7 @@ namespace WindowsNative
                     }
                 }
 
+                // Last chance.
                 if (!File.Exists(appFileName) && !File.Exists(appFileName.TrimStart('\\')))
                 {
                     SimpleLog.Log(logComponent, "Application not found [" + origAppToExecute + "].", SimpleLog.MsgType.ERROR);
