@@ -772,7 +772,7 @@ namespace WindowsNative
 
             try
             {
-                // Adjust TargetFolder ACL, add permissions for BUILTIN\Administrators group
+                // Adjust TargetFolder ACL, add permissions for BUILTIN\Administrators group.
                 var targetFolderInfo = new DirectoryInfo(targetFolder);
                 var targetFolderACL = new DirectorySecurity(targetFolder, AccessControlSections.Access);
                 targetFolderACL.AddAccessRule(
@@ -1018,7 +1018,7 @@ namespace WindowsNative
 
         private static SafeFileHandle OpenReparsePoint(string reparsePoint, NativeMethods.EFileAccess accessMode)
         {
-            // Open handle to reparse point
+            // Open handle to reparse point.
             SafeFileHandle reparsePointHandle = new SafeFileHandle(
                 NativeMethods.CreateFile(reparsePoint,
                     accessMode,
@@ -1104,10 +1104,10 @@ namespace WindowsNative
                 return;
             }
 
-            // Open the junction point
+            // Open the junction point.
             SafeFileHandle fileHandle = OpenReparsePoint(junctionPoint, NativeMethods.EFileAccess.GenericWrite);
 
-            // Setup reparse structure
+            // Setup reparse structure.
             NativeMethods.REPARSE_DATA_BUFFER reparseDataBuffer = new NativeMethods.REPARSE_DATA_BUFFER
             {
                 reparseTag = NativeMethods.IO_REPARSE_TAG_MOUNT_POINT,
@@ -1115,16 +1115,16 @@ namespace WindowsNative
                 pathBuffer = new byte[0x3FF0]
             };
 
-            // Calculate buffer size and allocate
+            // Calculate buffer size and allocate.
             int inBufferSize = Marshal.SizeOf(reparseDataBuffer);
             IntPtr inBuffer = Marshal.AllocHGlobal(inBufferSize);
 
             try
             {
-                // Create the pointer
+                // Create the pointer.
                 Marshal.StructureToPtr(reparseDataBuffer, inBuffer, false);
 
-                // Delete the reparse point
+                // Delete the reparse point.
                 bool result = NativeMethods.DeviceIoControl(
                     fileHandle.DangerousGetHandle(), 
                     NativeMethods.FSCTL_DELETE_REPARSE_POINT, 
