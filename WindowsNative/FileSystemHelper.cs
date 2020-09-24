@@ -289,7 +289,6 @@ namespace WindowsNative
             string sourceFileName,
             string destFileName,
             bool overWrite = true,
-            bool verboseOutput = true,
             bool handleInUseOnReboot = false)
         {
             SimpleLog.Log(logComponent, "Copy file: " + sourceFileName);
@@ -501,7 +500,7 @@ namespace WindowsNative
                     if (!skipItem)
                     {
                         string destinationFile = Path.Combine(targetFolder, sourceFile.Substring(sourceFile.LastIndexOf("\\") + 1));
-                        CopyFile(logComponent, sourceFile, destinationFile, true, verboseOutput, handleInUseOnReboot);
+                        CopyFile(logComponent, sourceFile, destinationFile, true, handleInUseOnReboot);
                     }
 
                     skipItem = false;
