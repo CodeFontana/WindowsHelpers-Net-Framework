@@ -356,12 +356,12 @@ namespace WindowsNative
                                 }
                             }
 
-                            // Attempt to rename destination file
+                            // Attempt to rename destination file.
                             // --> This may or may not succeed depending on type of
                             //     lock on the destination file.
                             File.Move(destFileName, incrementFilename);
 
-                            // Schedule original file for deletion on next reboot
+                            // Schedule original file for deletion on next reboot.
                             NativeMethods.MoveFileEx(
                                 incrementFilename,
                                 null,
@@ -388,10 +388,10 @@ namespace WindowsNative
 
                             try
                             {
-                                // Copy the file as a pending replacement
+                                // Copy the file as a pending replacement.
                                 File.Copy(sourceFileName, pendingFilename, true);
 
-                                // Attempt in-place file replacement (as alternative to copy/replacement)
+                                // Attempt in-place file replacement (as alternative to copy/replacement).
                                 bool moveSuccess = NativeMethods.MoveFileEx(
                                     pendingFilename,
                                     destFileName,
@@ -399,13 +399,13 @@ namespace WindowsNative
 
                                 if (!moveSuccess && handleInUseOnReboot)
                                 {
-                                    // Schedule deletion of original file
+                                    // Schedule deletion of original file.
                                     NativeMethods.MoveFileEx(
                                         destFileName,
                                         null,
                                         NativeMethods.MoveFileFlags.DelayUntilReboot);
 
-                                    // Schedule rename of pending file, to replace original destination
+                                    // Schedule rename of pending file, to replace original destination.
                                     NativeMethods.MoveFileEx(
                                         pendingFilename,
                                         destFileName,
