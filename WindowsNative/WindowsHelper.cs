@@ -164,6 +164,21 @@ namespace WindowsNative
             }
         }
 
+        public static DateTime ConvertBinaryDateTime(Byte[] bytes)
+        {
+            long filedate = (((((((
+            (long)bytes[7] * 256 +
+            (long)bytes[6]) * 256 +
+            (long)bytes[5]) * 256 +
+            (long)bytes[4]) * 256 +
+            (long)bytes[3]) * 256 +
+            (long)bytes[2]) * 256 +
+            (long)bytes[1]) * 256 +
+            (long)bytes[0]);
+            DateTime returnDate = DateTime.FromFileTime(filedate);
+            return returnDate;
+        }
+
         public static bool DeleteEnvironmentVariable(string variableName)
         {
             if (Environment.GetEnvironmentVariable(variableName, EnvironmentVariableTarget.Machine) != null)
