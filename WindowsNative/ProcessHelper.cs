@@ -678,6 +678,7 @@ namespace WindowsNative
             Thread consumeStdOut = null;
             Thread consumeStdErr = null;
             var cts = new CancellationTokenSource(); // Needed for batch files, see usage below.
+            var syncMutex = new Mutex(); // Mutex for synchronizing capture of combined STDOUT/STDERR.
 
             try
             {
@@ -717,16 +718,64 @@ namespace WindowsNative
 
                 if (!hideStreamOutput)
                 {
-                    // Create async threads for consuming the STDOUT/STDERR streams.
-                    consumeStdOut = new Thread(async () =>
+                    // Create async thread for consuming the STDOUT stream.
+                    consumeStdOut = new Thread(() =>
                     {
-                        // Ensure the thread awaits the result of ConsumeReader().
-                        await ConsumeReader(logComponent, p.StandardOutput, combinedOutput, hideStreamOutput, hideExecution, cts.Token);
+                        try
+                        {
+                            string textLine;
+
+                            while (!cts.Token.IsCancellationRequested &&
+                                (textLine = p.StandardOutput.ReadLine()) != null)
+                            {
+                                syncMutex.WaitOne();
+                                combinedOutput.Add(textLine);
+
+                                if (!hideStreamOutput && !hideExecution)
+                                {
+                                    SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
+                                }
+
+                                syncMutex.ReleaseMutex();
+                            }
+
+                            return;
+                        }
+                        catch (Exception e)
+                        {
+                            SimpleLog.Log(logComponent, e, "Async read operation failure.");
+                            return;
+                        }
                     });
-                    consumeStdErr = new Thread(async () =>
+
+                    // Create async thread for consuming the STDERR stream.
+                    consumeStdErr = new Thread(() =>
                     {
-                        // Ensure the thread awaits the result of ConsumeReader().
-                        await ConsumeReader(logComponent, p.StandardError, combinedOutput, hideStreamOutput, hideExecution, cts.Token);
+                        try
+                        {
+                            string textLine;
+
+                            while (!cts.Token.IsCancellationRequested &&
+                                (textLine = p.StandardError.ReadLine()) != null)
+                            {
+                                syncMutex.WaitOne();
+                                combinedOutput.Add(textLine);
+
+                                if (!hideStreamOutput && !hideExecution)
+                                {
+                                    SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
+                                }
+
+                                syncMutex.ReleaseMutex();
+                            }
+
+                            return;
+                        }
+                        catch (Exception e)
+                        {
+                            SimpleLog.Log(logComponent, e, "Async read operation failure.");
+                            return;
+                        }
                     });
 
                     consumeStdOut.Start();
@@ -764,7 +813,7 @@ namespace WindowsNative
                         // Signal task cancellation for STDOUT/STDERR streams.
                         // Note: This is because batch files, if nested, automatically inherit STDOUT/STDERR
                         //       handles. Thus if the immediate child batch file has terminated, we need to
-                        //       signal the ConsumeReader() threads to abort, so RunProcessEx() can continue.
+                        //       signal the STDOUT/ERR threads to abort, so RunProcessEx() can continue.
                         cts.Cancel();
                     }
 
@@ -787,37 +836,6 @@ namespace WindowsNative
             {
                 SimpleLog.Log(logComponent, e, "New process monitoring failure.");
                 return Tuple.Create((long)-1, "");
-            }
-        }
-
-        private async static Task ConsumeReader(string logComponent,
-            TextReader reader,
-            List<string> combinedOutput,
-            bool hideStreamOutput,
-            bool hideExecution,
-            CancellationToken cancelToken)
-        {
-            try
-            {
-                string textLine;
-
-                while (!cancelToken.IsCancellationRequested &&
-                    (textLine = await reader.ReadLineAsync()) != null)
-                {
-                    combinedOutput.Add(textLine);
-
-                    if (!hideStreamOutput && !hideExecution)
-                    {
-                        SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
-                    }
-                }
-
-                return;
-            }
-            catch (Exception e)
-            {
-                SimpleLog.Log(logComponent, e, "Async read operation failure.");
-                return;
             }
         }
 
