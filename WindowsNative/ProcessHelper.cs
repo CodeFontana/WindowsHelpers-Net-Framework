@@ -675,10 +675,10 @@ namespace WindowsNative
 
             Process p = new Process();
             List<string> combinedOutput = new List<string>();
-            Thread consumeStdOut = null;
-            Thread consumeStdErr = null;
+            Task consumeStdOut = null;
+            Task consumeStdErr = null;
             var cts = new CancellationTokenSource(); // Needed for batch files, see usage below.
-            var syncMutex = new Mutex(); // Mutex for synchronizing capture of combined STDOUT/STDERR.
+            var outputMutex = new Mutex(); // Mutex for synchronizing capture of combined STDOUT/STDERR.
 
             try
             {
@@ -719,16 +719,15 @@ namespace WindowsNative
                 if (!hideStreamOutput)
                 {
                     // Create async thread for consuming the STDOUT stream.
-                    consumeStdOut = new Thread(() =>
+                    async Task ConsumeOutputAsync(StreamReader outputStream)
                     {
                         try
                         {
                             string textLine;
 
-                            while (!cts.Token.IsCancellationRequested &&
-                                (textLine = p.StandardOutput.ReadLine()) != null)
+                            while ((textLine = await outputStream.ReadLineAsync()) != null)
                             {
-                                syncMutex.WaitOne();
+                                outputMutex.WaitOne();
                                 combinedOutput.Add(textLine);
 
                                 if (!hideStreamOutput && !hideExecution)
@@ -736,50 +735,15 @@ namespace WindowsNative
                                     SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
                                 }
 
-                                syncMutex.ReleaseMutex();
+                                outputMutex.ReleaseMutex();
                             }
-
-                            return;
                         }
-                        catch (Exception e)
-                        {
-                            SimpleLog.Log(logComponent, e, "Async read operation failure.");
-                            return;
-                        }
-                    });
+                        catch (TaskCanceledException) { }
+                        catch (Exception e) { SimpleLog.Log(logComponent, e, "Async read operation failure."); }
+                    }
 
-                    // Create async thread for consuming the STDERR stream.
-                    consumeStdErr = new Thread(() =>
-                    {
-                        try
-                        {
-                            string textLine;
-
-                            while (!cts.Token.IsCancellationRequested &&
-                                (textLine = p.StandardError.ReadLine()) != null)
-                            {
-                                syncMutex.WaitOne();
-                                combinedOutput.Add(textLine);
-
-                                if (!hideStreamOutput && !hideExecution)
-                                {
-                                    SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
-                                }
-
-                                syncMutex.ReleaseMutex();
-                            }
-
-                            return;
-                        }
-                        catch (Exception e)
-                        {
-                            SimpleLog.Log(logComponent, e, "Async read operation failure.");
-                            return;
-                        }
-                    });
-
-                    consumeStdOut.Start();
-                    consumeStdErr.Start();
+                    consumeStdOut = Task.Run(() => ConsumeOutputAsync(p.StandardOutput));
+                    consumeStdErr = Task.Run(() => ConsumeOutputAsync(p.StandardError));
                 }
             }
             catch (Exception e)
@@ -817,8 +781,9 @@ namespace WindowsNative
                         cts.Cancel();
                     }
 
-                    if (consumeStdOut != null) consumeStdOut.Join();
-                    if (consumeStdErr != null) consumeStdErr.Join();
+                    // Wait for async threads to stop.
+                    try { consumeStdOut.Wait(cts.Token); } catch (OperationCanceledException) { }
+                    try { consumeStdErr.Wait(cts.Token); } catch (OperationCanceledException) { }
                 }
 
                 int ExitCode = p.ExitCode;
@@ -829,6 +794,7 @@ namespace WindowsNative
                 }
 
                 cts.Dispose();
+                outputMutex.Dispose();
                 p.Dispose();
                 return Tuple.Create((long)ExitCode, String.Join(Environment.NewLine, combinedOutput.ToList()));
             }
