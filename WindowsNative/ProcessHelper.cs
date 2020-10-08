@@ -678,7 +678,6 @@ namespace WindowsNative
             Task consumeStdOut = null;
             Task consumeStdErr = null;
             var cts = new CancellationTokenSource(); // Needed for batch files, see usage below.
-            var outputMutex = new Mutex(); // Mutex for synchronizing capture of combined STDOUT/STDERR.
 
             try
             {
@@ -721,29 +720,22 @@ namespace WindowsNative
                     // Create async thread for consuming the STDOUT stream.
                     async Task ConsumeOutputAsync(StreamReader outputStream)
                     {
-                        try
+                        string textLine;
+
+                        while (!cts.Token.IsCancellationRequested &&
+                            (textLine = await outputStream.ReadLineAsync()) != null)
                         {
-                            string textLine;
+                            combinedOutput.Add(textLine);
 
-                            while ((textLine = await outputStream.ReadLineAsync()) != null)
+                            if (!hideStreamOutput && !hideExecution)
                             {
-                                outputMutex.WaitOne();
-                                combinedOutput.Add(textLine);
-
-                                if (!hideStreamOutput && !hideExecution)
-                                {
-                                    SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
-                                }
-
-                                outputMutex.ReleaseMutex();
+                                SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
                             }
                         }
-                        catch (TaskCanceledException) { }
-                        catch (Exception e) { SimpleLog.Log(logComponent, e, "Async read operation failure."); }
                     }
 
-                    consumeStdOut = Task.Run(() => ConsumeOutputAsync(p.StandardOutput));
-                    consumeStdErr = Task.Run(() => ConsumeOutputAsync(p.StandardError));
+                    consumeStdOut = Task.Run(() => ConsumeOutputAsync(p.StandardOutput), cts.Token);
+                    consumeStdErr = Task.Run(() => ConsumeOutputAsync(p.StandardError), cts.Token);
                 }
             }
             catch (Exception e)
@@ -782,8 +774,8 @@ namespace WindowsNative
                     }
 
                     // Wait for async threads to stop.
-                    try { consumeStdOut.Wait(cts.Token); } catch (OperationCanceledException) { }
-                    try { consumeStdErr.Wait(cts.Token); } catch (OperationCanceledException) { }
+                    try { if (consumeStdOut != null) { consumeStdOut.Wait(cts.Token); } } catch (OperationCanceledException) { }
+                    try { if (consumeStdErr != null) { consumeStdErr.Wait(cts.Token); } } catch (OperationCanceledException) { }
                 }
 
                 int ExitCode = p.ExitCode;
@@ -794,7 +786,6 @@ namespace WindowsNative
                 }
 
                 cts.Dispose();
-                outputMutex.Dispose();
                 p.Dispose();
                 return Tuple.Create((long)ExitCode, String.Join(Environment.NewLine, combinedOutput.ToList()));
             }
