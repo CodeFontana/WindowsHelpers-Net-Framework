@@ -690,12 +690,6 @@ namespace WindowsNative
                 p.StartInfo.CreateNoWindow = hideWindow; // Passed into function
                 p.StartInfo.Verb = "runas"; // Elevate (note sure if this works with UseShellExecute=false)
 
-                if (hideStreamOutput)
-                {
-                    p.StartInfo.RedirectStandardOutput = false; // Don't redirect STDOUT.
-                    p.StartInfo.RedirectStandardError = false; // Don't redirect STDERR.
-                }
-
                 if (!hideExecution)
                 {
                     SimpleLog.Log(logComponent, "Create process: " + appFileName + " " + arguments + " [Timeout=" + execTimeoutSeconds.ToString() + "s]");
@@ -715,28 +709,25 @@ namespace WindowsNative
             {
                 p.Start();
 
-                if (!hideStreamOutput)
+                // Create async thread for consuming the STDOUT stream.
+                async Task ConsumeOutputAsync(StreamReader outputStream)
                 {
-                    // Create async thread for consuming the STDOUT stream.
-                    async Task ConsumeOutputAsync(StreamReader outputStream)
+                    string textLine;
+
+                    while (!cts.Token.IsCancellationRequested &&
+                        (textLine = await outputStream.ReadLineAsync()) != null)
                     {
-                        string textLine;
+                        combinedOutput.Add(textLine);
 
-                        while (!cts.Token.IsCancellationRequested &&
-                            (textLine = await outputStream.ReadLineAsync()) != null)
+                        if (!hideStreamOutput && !hideExecution)
                         {
-                            combinedOutput.Add(textLine);
-
-                            if (!hideStreamOutput && !hideExecution)
-                            {
-                                SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
-                            }
+                            SimpleLog.Log(logComponent, textLine, SimpleLog.MsgType.INFO);
                         }
                     }
-
-                    consumeStdOut = Task.Run(() => ConsumeOutputAsync(p.StandardOutput), cts.Token);
-                    consumeStdErr = Task.Run(() => ConsumeOutputAsync(p.StandardError), cts.Token);
                 }
+
+                consumeStdOut = Task.Run(() => ConsumeOutputAsync(p.StandardOutput), cts.Token);
+                consumeStdErr = Task.Run(() => ConsumeOutputAsync(p.StandardError), cts.Token);
             }
             catch (Exception e)
             {
