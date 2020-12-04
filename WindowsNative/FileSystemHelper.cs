@@ -68,13 +68,13 @@ namespace WindowsNative
                     FileSecurity fSecurity = File.GetAccessControl(fileOrFolder);
                     fSecurity.SetAccessRuleProtection(false, true);
                     fSecurity.AddAccessRule(new FileSystemAccessRule(
-                    userAccount, requestedRights, controlType));
+                        userAccount, requestedRights, controlType));
                     File.SetAccessControl(fileOrFolder, fSecurity);
                 }
                 else if (Directory.Exists(fileOrFolder))
                 {
                     DirectorySecurity dSecurity = Directory.GetAccessControl(fileOrFolder);
-                    dSecurity.SetAccessRuleProtection(false, true);
+                    //dSecurity.SetAccessRuleProtection(false, true); // This option appears to flip the enable/disable inheritance option.
                     dSecurity.AddAccessRule(new FileSystemAccessRule(
                         userAccount, requestedRights,
                         inheritFlag, propFlag, controlType));
@@ -1048,7 +1048,18 @@ namespace WindowsNative
             {
                 DirectoryInfo dInfo = new DirectoryInfo(folderName);
                 DirectorySecurity dSecurity = dInfo.GetAccessControl();
-                dSecurity.RemoveAccessRule(new FileSystemAccessRule(userAccount, revokedRights, controlType));
+
+                foreach(FileSystemAccessRule ace in dSecurity.GetAccessRules(true, true, typeof(NTAccount)))
+                {
+                    if (ace.FileSystemRights.Equals(revokedRights) &&
+                        ace.AccessControlType.Equals(controlType) &&
+                        ace.IdentityReference.Translate(typeof(NTAccount)).Value.ToLower().Equals(userAccount.ToLower()))
+                    {
+                        dSecurity.RemoveAccessRule(ace);
+                        break;
+                    }
+                }
+
                 dInfo.SetAccessControl(dSecurity);
                 return true;
             }
