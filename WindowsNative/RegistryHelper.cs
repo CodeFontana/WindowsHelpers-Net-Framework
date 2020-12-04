@@ -39,6 +39,27 @@ namespace WindowsNative
             }
         }
 
+        public static void CopyValue(string logComponent,
+            RegistryKey sourceKey, RegistryKey destKey,
+            string sourceValueName, string destValueName)
+        {
+            try
+            {
+                if (sourceKey.GetValue(sourceValueName) == null)
+                {
+                    SimpleLog.Log(logComponent, "Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", SimpleLog.MsgType.ERROR);
+                }
+
+                destKey.SetValue(destValueName,
+                    sourceKey.GetValue(sourceValueName, sourceValueName, RegistryValueOptions.DoNotExpandEnvironmentNames),
+                    sourceKey.GetValueKind(sourceValueName));
+            }
+            catch (Exception e)
+            {
+                SimpleLog.Log(logComponent, e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+            }
+        }
+
         public static bool DeleteSubKeysWithValue(string logComponent,
             RegistryHive regHive, string regKey, string valueName, string valueData)
         {
