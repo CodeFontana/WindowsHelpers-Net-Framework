@@ -310,11 +310,11 @@ namespace WindowsNative
                         return false;
                     }
 
-                    if (!Directory.Exists(ParsePath(destFileName)))
+                    if (!Directory.Exists(Path.GetDirectoryName(destFileName)))
                     {
                         try
                         {
-                            Directory.CreateDirectory(ParsePath(destFileName));
+                            Directory.CreateDirectory(Path.GetDirectoryName(destFileName));
                         }
                         catch (Exception e)
                         {
@@ -325,7 +325,7 @@ namespace WindowsNative
 
                     File.Copy(sourceFileName, destFileName, overWrite);
 
-                    foreach (string file in Directory.GetFiles(ParsePath(destFileName)))
+                    foreach (string file in Directory.GetFiles(Path.GetDirectoryName(destFileName)))
                     {
                         if (file.ToLower().Contains(".delete_on_reboot"))
                         {
@@ -438,7 +438,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to copy file [" + ParseShortname(sourceFileName) + "] to destination.");
+                SimpleLog.Log(logComponent, e, "Failed to copy file [" + Path.GetFileName(sourceFileName) + "] to destination.");
             }
 
             return false;
@@ -954,11 +954,11 @@ namespace WindowsNative
                 {
                     try
                     {
-                        foldersAndFiles.Add(new string[] { ParseShortname(file), BytesToReadableValue(SizeOfFileOrFolder(file)) });
+                        foldersAndFiles.Add(new string[] { Path.GetFileName(file), BytesToReadableValue(SizeOfFileOrFolder(file)) });
                     }
                     catch (Exception)
                     {
-                        foldersAndFiles.Add(new string[] { ParseShortname(file), "<Size unavailable>" });
+                        foldersAndFiles.Add(new string[] { Path.GetFileName(file), "<Size unavailable>" });
                     }
                 }
             }
@@ -1010,7 +1010,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to move file [" + ParseShortname(sourceFileName) + "] to destination.");
+                SimpleLog.Log(logComponent, e, "Failed to move file [" + Path.GetFileName(sourceFileName) + "] to destination.");
             }
 
             return false;
@@ -1036,44 +1036,6 @@ namespace WindowsNative
             }
 
             return reparsePointHandle;
-        }
-
-        public static string ParseFriendlyname(string filename)
-        {
-            string friendlyName = ParseShortname(filename);
-
-            if (friendlyName.Contains("."))
-            {
-                return friendlyName.Substring(0, friendlyName.LastIndexOf("."));
-            }
-            else
-            {
-                return friendlyName;
-            }
-        }
-
-        public static string ParsePath(string filename)
-        {
-            if (filename.Contains("\\"))
-            {
-                return filename.Substring(0, filename.LastIndexOf("\\"));
-            }
-            else
-            {
-                return filename;
-            }
-        }
-
-        public static string ParseShortname(string filename)
-        {
-            if (filename.Contains("\\"))
-            {
-                return filename.Substring(filename.LastIndexOf("\\") + 1);
-            }
-            else
-            {
-                return filename;
-            }
         }
 
         public static bool RemoveDirectorySecurity(string logComponent,
@@ -1161,7 +1123,7 @@ namespace WindowsNative
 
                 foreach (string someFile in Directory.GetFiles(baseFolder))
                 {
-                    if (ParseShortname(someFile).ToLower().Equals(ParseShortname(replaceFile).ToLower()))
+                    if (Path.GetFileName(someFile).ToLower().Equals(Path.GetFileName(replaceFile).ToLower()))
                     {
                         SimpleLog.Log(logComponent, "Replace file: " + someFile);
                         CopyFile(logComponent, replaceFile, someFile, true);
@@ -1172,7 +1134,7 @@ namespace WindowsNative
                             {
                                 if (File.Exists(addFile))
                                 {
-                                    string addFileDest = ParsePath(someFile) + "\\" + ParseShortname(addFile);
+                                    string addFileDest = Path.GetDirectoryName(someFile) + "\\" + Path.GetFileName(addFile);
                                     SimpleLog.Log(logComponent, "Replace file: " + addFileDest);
                                     CopyFile(logComponent, addFile, addFileDest, true);
                                 }

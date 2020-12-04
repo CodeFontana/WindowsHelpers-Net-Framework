@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using SimpleLogger;
 using WindowsNative;
@@ -12,7 +13,7 @@ namespace SandboxApp
         {
             // Identify process.
             string processName = Process.GetCurrentProcess().MainModule.FileName;
-            string processPath = FileSystemHelper.ParsePath(processName);
+            string processPath = Path.GetDirectoryName(processName);
 
             // Open log.
             SimpleLog testLog = new SimpleLog("Lorem_Ipsum", processPath, 524288, 5);

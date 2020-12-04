@@ -8,6 +8,7 @@ namespace SandboxApp
         {
             // Todo: Sandbox testing code here!
             // ...
+            LogTest.RolloverTest();
 
             // Press any key to continue...
             Console.ReadLine();

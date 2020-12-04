@@ -120,7 +120,7 @@ namespace WindowsNative
                 {
                     lnk.TargetPath = targetFileName;
                     lnk.Arguments = targetArguments;
-                    lnk.WorkingDirectory = FileSystemHelper.ParsePath(targetFileName);
+                    lnk.WorkingDirectory = Path.GetDirectoryName(targetFileName);
                     lnk.IconLocation = "shell32.dll, " + iconNumber.ToString();
                     lnk.Description = shortcutDescription;
                     lnk.Save();

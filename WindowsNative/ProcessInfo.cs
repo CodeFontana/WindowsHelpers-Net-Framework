@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Security.Principal;
+using System.IO;
 
 namespace WindowsNative
 {
@@ -23,9 +24,9 @@ namespace WindowsNative
         public ProcessInfo(Process p)
         {
             ProcessName = p.MainModule.FileName;
-            ProcessShortName = FileSystemHelper.ParseShortname(ProcessName);
+            ProcessShortName = Path.GetFileName(ProcessName);
             ProcessFriendlyName = p.ProcessName;
-            ProcessFilePath = FileSystemHelper.ParsePath(ProcessName);
+            ProcessFilePath = Path.GetDirectoryName(ProcessName);
             PID = p.Id;
             UserName = GetProcessOwner(p.Handle);
             CPUTime = p.TotalProcessorTime.ToString().Substring(0, 11);

@@ -51,7 +51,7 @@ namespace WindowsNative
                     (uint)NativeMethods.CreateProcessFlags.CREATE_UNICODE_ENVIRONMENT |
                     (uint)NativeMethods.CreateProcessFlags.CREATE_NEW_CONSOLE,
                     hEnvironment,
-                    FileSystemHelper.ParsePath(appFileName),
+                    Path.GetDirectoryName(appFileName),
                     ref si,
                     out pi))
                 {
@@ -150,7 +150,7 @@ namespace WindowsNative
                     (uint)NativeMethods.CreateProcessFlags.CREATE_UNICODE_ENVIRONMENT |
                     (uint)NativeMethods.CreateProcessFlags.CREATE_NEW_CONSOLE,
                     hEnvironment,
-                    FileSystemHelper.ParsePath(appFileName),
+                    Path.GetDirectoryName(appFileName),
                     ref si,
                     out pi))
                 {
@@ -212,7 +212,7 @@ namespace WindowsNative
 
         public static bool IsProcessRunning(string logComponent, string processFriendlyName, bool moreInfo = false)
         {
-            processFriendlyName = FileSystemHelper.ParseFriendlyname(processFriendlyName);
+            processFriendlyName = Path.GetFileNameWithoutExtension(processFriendlyName);
 
             foreach (Process runningProcess in Process.GetProcesses())
             {
@@ -304,7 +304,7 @@ namespace WindowsNative
         public static int IsProcessRunningCount(string processFriendlyName)
         {
             int processCount = 0;
-            processFriendlyName = FileSystemHelper.ParseFriendlyname(processFriendlyName);
+            processFriendlyName = Path.GetFileNameWithoutExtension(processFriendlyName);
 
             foreach (Process runningProcess in Process.GetProcesses())
             {
@@ -650,7 +650,7 @@ namespace WindowsNative
                 {
                     if (appFileName.Contains("\\"))
                     {
-                        workingDirectory = FileSystemHelper.ParsePath(appFileName);
+                        workingDirectory = Path.GetDirectoryName(appFileName);
 
                         if (!Directory.Exists(workingDirectory))
                         {
@@ -751,7 +751,7 @@ namespace WindowsNative
                 if (!p.HasExited)
                 {
                     p.Kill();
-                    SimpleLog.Log(logComponent, "Killed: " + FileSystemHelper.ParseShortname(appFileName) + " [Timeout breached]", SimpleLog.MsgType.ERROR);
+                    SimpleLog.Log(logComponent, "Killed: " + Path.GetFileName(appFileName) + " [Timeout breached]", SimpleLog.MsgType.ERROR);
                 }
                 else
                 {
@@ -773,7 +773,7 @@ namespace WindowsNative
 
                 if (!hideExecution)
                 {
-                    SimpleLog.Log(logComponent, FileSystemHelper.ParseShortname(appFileName) + " return code: " + ExitCode.ToString());
+                    SimpleLog.Log(logComponent, Path.GetFileName(appFileName) + " return code: " + ExitCode.ToString());
                 }
 
                 cts.Dispose();
@@ -854,7 +854,7 @@ namespace WindowsNative
             {
                 if (appFileName.Contains("\\"))
                 {
-                    workingDirectory = FileSystemHelper.ParsePath(appFileName);
+                    workingDirectory = Path.GetDirectoryName(appFileName);
 
                     if (!Directory.Exists(workingDirectory))
                     {
