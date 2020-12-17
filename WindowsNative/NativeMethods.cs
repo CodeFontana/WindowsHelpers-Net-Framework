@@ -1535,6 +1535,7 @@ namespace WindowsNative
         public const string SE_SYSTEMTIME_NAME = "SeSystemtimePrivilege";
         public const string SE_SHUTDOWN_NAME = "SeShutdownPrivilege";
         public const string SE_TAKE_OWNERSHIP_NAME = "SeTakeOwnershipPrivilege";
+        public const string SE_CREATE_PAGEFILE_NAME = "SeCreatePagefilePrivilege";
 
         public const int NO_INHERITANCE = 0x0;
         public const int SECURITY_BUILTIN_DOMAIN_RID = 0x00000020;

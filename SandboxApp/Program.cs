@@ -7,10 +7,9 @@ namespace SandboxApp
         static void Main(string[] args)
         {
             // Todo: Sandbox testing code here!
-            // ...
-            LogTest.RolloverTest();
+            WindowsNative.PageFile.DisplayConfig("Sandbox");
 
-            // Press any key to continue...
+            Console.WriteLine("Press any key to exit...");
             Console.ReadLine();
         }
     }
