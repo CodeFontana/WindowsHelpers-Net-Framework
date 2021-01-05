@@ -141,7 +141,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to read page file configuration.");
+                Logger.Log(logComponent, e, "Failed to read page file configuration.");
                 return false;
             }
         }
@@ -152,13 +152,13 @@ namespace WindowsNative
 
             foreach (PageFile p in PageFiles)
             {
-                SimpleLog.Log(logComponent, $"Drive: {p.DriveLetter}");
-                SimpleLog.Log(logComponent, $"  Comment: {p.Comment}");
-                SimpleLog.Log(logComponent, $"  Initial Size: {p.InitialSize}MB");
-                SimpleLog.Log(logComponent, $"  Maximum Size: {p.MaximumSize}MB");
-                SimpleLog.Log(logComponent, $"  Allocated Size: {p.AllocatedBaseSize}MB");
-                SimpleLog.Log(logComponent, $"  Current usage: {p.CurrentUsage}MB");
-                SimpleLog.Log(logComponent, $"  Peak usage: {p.PeakUsage}MB");
+                Logger.Log(logComponent, $"Drive: {p.DriveLetter}");
+                Logger.Log(logComponent, $"  Comment: {p.Comment}");
+                Logger.Log(logComponent, $"  Initial Size: {p.InitialSize}MB");
+                Logger.Log(logComponent, $"  Maximum Size: {p.MaximumSize}MB");
+                Logger.Log(logComponent, $"  Allocated Size: {p.AllocatedBaseSize}MB");
+                Logger.Log(logComponent, $"  Current usage: {p.CurrentUsage}MB");
+                Logger.Log(logComponent, $"  Peak usage: {p.PeakUsage}MB");
             }
         }
 
@@ -170,11 +170,11 @@ namespace WindowsNative
 
                 if (!NativeMethods.OpenProcessToken(hProcess, NativeMethods.TOKEN_ALL_ACCESS, out IntPtr hToken))
                 {
-                    SimpleLog.Log(logComponent, "ERROR: Unable to open specified process token [OpenProcessToken=" + Marshal.GetLastWin32Error().ToString() + "].");
+                    Logger.Log(logComponent, "ERROR: Unable to open specified process token [OpenProcessToken=" + Marshal.GetLastWin32Error().ToString() + "].");
                 }
 
                 WindowsHelper.EnablePrivilege(logComponent, hToken, NativeMethods.SE_CREATE_PAGEFILE_NAME);
-                SimpleLog.Log(logComponent, $"Configure automatic page file management [Enable={enable.ToString().ToUpper()}]...");
+                Logger.Log(logComponent, $"Configure automatic page file management [Enable={enable.ToString().ToUpper()}]...");
 
                 var scope = new ManagementScope(@"\\.\root\cimv2");
                 scope.Connect();
@@ -185,29 +185,29 @@ namespace WindowsNative
                 {
                     if (enable && m["AutomaticManagedPagefile"].ToString().ToUpper().Equals("FALSE"))
                     {
-                        SimpleLog.Log(logComponent, "Current setting: OFF");
-                        SimpleLog.Log(logComponent, "New setting: ON");
+                        Logger.Log(logComponent, "Current setting: OFF");
+                        Logger.Log(logComponent, "New setting: ON");
                         m["AutomaticManagedPagefile"] = true;
                         m.Put();
-                        SimpleLog.Log(logComponent, "Configuration successful.");
+                        Logger.Log(logComponent, "Configuration successful.");
                     }
                     else if (enable && m["AutomaticManagedPagefile"].ToString().ToUpper().Equals("TRUE"))
                     {
-                        SimpleLog.Log(logComponent, "Current setting: ON");
-                        SimpleLog.Log(logComponent, "No configuration changes required.");
+                        Logger.Log(logComponent, "Current setting: ON");
+                        Logger.Log(logComponent, "No configuration changes required.");
                     }
                     else if (!enable && m["AutomaticManagedPagefile"].ToString().ToUpper().Equals("FALSE"))
                     {
-                        SimpleLog.Log(logComponent, "Current setting: OFF");
-                        SimpleLog.Log(logComponent, "No configuration changes required.");
+                        Logger.Log(logComponent, "Current setting: OFF");
+                        Logger.Log(logComponent, "No configuration changes required.");
                     }
                     else if (!enable && m["AutomaticManagedPagefile"].ToString().ToUpper().Equals("TRUE"))
                     {
-                        SimpleLog.Log(logComponent, "Current setting: ON");
-                        SimpleLog.Log(logComponent, "New setting: OFF");
+                        Logger.Log(logComponent, "Current setting: ON");
+                        Logger.Log(logComponent, "New setting: OFF");
                         m["AutomaticManagedPagefile"] = false;
                         m.Put();
-                        SimpleLog.Log(logComponent, "Configuration successful.");
+                        Logger.Log(logComponent, "Configuration successful.");
                     }
                 }
 
@@ -215,7 +215,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to update automatic page file configuration.");
+                Logger.Log(logComponent, e, "Failed to update automatic page file configuration.");
                 return false;
             }
         }
@@ -228,19 +228,19 @@ namespace WindowsNative
                 // Turn OFF Automatic Page File Management.
                 // ******************************
 
-                SimpleLog.Log(logComponent, "Ensure automatic page file management is OFF...");
+                Logger.Log(logComponent, "Ensure automatic page file management is OFF...");
                 bool success = ConfigureAutomaticPageFile(logComponent, false);
 
                 if (!success)
                 {
-                    SimpleLog.Log(logComponent, "ERROR: Failed to TURN OFF automatic page file management, further actions cancelled.");
+                    Logger.Log(logComponent, "ERROR: Failed to TURN OFF automatic page file management, further actions cancelled.");
                     return false;
                 }
 
-                SimpleLog.Log(logComponent, "Perform manual configuration...");
-                SimpleLog.Log(logComponent, $"  Drive letter: {driveLetter}:\\");
-                SimpleLog.Log(logComponent, $"  Initial Size: {initSize}");
-                SimpleLog.Log(logComponent, $"  Maximum Size: {maxSize}");
+                Logger.Log(logComponent, "Perform manual configuration...");
+                Logger.Log(logComponent, $"  Drive letter: {driveLetter}:\\");
+                Logger.Log(logComponent, $"  Initial Size: {initSize}");
+                Logger.Log(logComponent, $"  Maximum Size: {maxSize}");
 
                 // ******************************
                 // Verify Free Disk Space Available.
@@ -254,7 +254,7 @@ namespace WindowsNative
 
                         if (maxSize > freeSpaceMB)
                         {
-                            SimpleLog.Log(logComponent, $"ERROR: Page file maximum size [{maxSize}MB] exceeds available free disk space [{freeSpaceMB}MB].");
+                            Logger.Log(logComponent, $"ERROR: Page file maximum size [{maxSize}MB] exceeds available free disk space [{freeSpaceMB}MB].");
                             return false;
                         }
                         else
@@ -279,7 +279,7 @@ namespace WindowsNative
                 {
                     if (m["Name"].ToString().ToUpper().StartsWith(driveLetter.ToUpper()))
                     {
-                        SimpleLog.Log(logComponent, "Update existing page file configuration...");
+                        Logger.Log(logComponent, "Update existing page file configuration...");
                         matchFound = true;
                         m["InitialSize"] = initSize;
                         m["MaximumSize"] = maxSize;
@@ -290,7 +290,7 @@ namespace WindowsNative
 
                 if (queryCollection.Count == 0 || !matchFound)
                 {
-                    SimpleLog.Log(logComponent, "Create new page file configuration...");
+                    Logger.Log(logComponent, "Create new page file configuration...");
                     var mc = new ManagementClass(@"\\.\root\cimv2", "Win32_PageFileSetting", null);
                     ManagementObject mo = mc.CreateInstance();
                     mo["Caption"] = $"{driveLetter.ToUpper()}:\\ 'pagefile.sys'";
@@ -307,12 +307,12 @@ namespace WindowsNative
                 }
 
                 searcher.Dispose();
-                SimpleLog.Log(logComponent, "Configuration successful.");
+                Logger.Log(logComponent, "Configuration successful.");
                 return true;
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to update page file configuration.");
+                Logger.Log(logComponent, e, "Failed to update page file configuration.");
                 return false;
             }
         }
@@ -325,12 +325,12 @@ namespace WindowsNative
                 // Turn OFF Automatic Page File Management.
                 // ******************************
 
-                SimpleLog.Log(logComponent, "Ensure automatic page file management is OFF...");
+                Logger.Log(logComponent, "Ensure automatic page file management is OFF...");
                 bool success = ConfigureAutomaticPageFile(logComponent, false);
 
                 if (!success)
                 {
-                    SimpleLog.Log(logComponent, "ERROR: Failed to TURN OFF automatic page file management, further actions cancelled.");
+                    Logger.Log(logComponent, "ERROR: Failed to TURN OFF automatic page file management, further actions cancelled.");
                     return false;
                 }
 
@@ -338,8 +338,8 @@ namespace WindowsNative
                 // Remove Page File Configuration.
                 // ******************************
 
-                SimpleLog.Log(logComponent, "Remove page file configuration...");
-                SimpleLog.Log(logComponent, $"  Drive letter: {driveLetter}");
+                Logger.Log(logComponent, "Remove page file configuration...");
+                Logger.Log(logComponent, $"  Drive letter: {driveLetter}");
                 var scope = new ManagementScope(@"\\.\root\cimv2");
                 scope.Connect();
                 var query = new ObjectQuery("SELECT * FROM Win32_PageFileSetting");
@@ -351,7 +351,7 @@ namespace WindowsNative
                 {
                     if (m["Name"].ToString().ToUpper().StartsWith(driveLetter.ToUpper()))
                     {
-                        SimpleLog.Log(logComponent, "Found page file configuration, removing...");
+                        Logger.Log(logComponent, "Found page file configuration, removing...");
                         matchFound = true;
                         m.Delete();
                         break;
@@ -360,17 +360,17 @@ namespace WindowsNative
 
                 if (queryCollection.Count == 0 || !matchFound)
                 {
-                    SimpleLog.Log(logComponent, $"ERROR: Removal failed, no page file is currently configured for {driveLetter}:\\.");
+                    Logger.Log(logComponent, $"ERROR: Removal failed, no page file is currently configured for {driveLetter}:\\.");
                     return false;
                 }
 
                 searcher.Dispose();
-                SimpleLog.Log(logComponent, "Removal successful.");
+                Logger.Log(logComponent, "Removal successful.");
                 return true;
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to update page file configuration.");
+                Logger.Log(logComponent, e, "Failed to update page file configuration.");
                 return false;
             }
         }

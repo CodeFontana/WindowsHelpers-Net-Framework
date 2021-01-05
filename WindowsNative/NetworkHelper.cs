@@ -19,7 +19,7 @@ namespace WindowsNative
                 {
                     if (!hideOutput)
                     {
-                        SimpleLog.Log(logComponent, hostAddress + " resolved to: " + hostAddress);
+                        Logger.Log(logComponent, hostAddress + " resolved to: " + hostAddress);
                     }
 
                     return new Tuple<bool, List<string>>(true, new List<string> { hostAddress });
@@ -40,7 +40,7 @@ namespace WindowsNative
                             addresses.Add(addr.ToString());
                             if (!hideOutput)
                             {
-                                SimpleLog.Log(logComponent, hostAddress + " resolved to: " + addr.ToString());
+                                Logger.Log(logComponent, hostAddress + " resolved to: " + addr.ToString());
                             }
                         }
                     }
@@ -52,7 +52,7 @@ namespace WindowsNative
             {
                 if (!hideOutput)
                 {
-                    SimpleLog.Log(logComponent, "Unable to resolve: " + hostAddress);
+                    Logger.Log(logComponent, "Unable to resolve: " + hostAddress);
                 }
 
                 return new Tuple<bool, List<string>>(false, null);
@@ -61,7 +61,7 @@ namespace WindowsNative
             {
                 if (!hideOutput)
                 {
-                    SimpleLog.Log(logComponent, e, "Address resolution failure.");
+                    Logger.Log(logComponent, e, "Address resolution failure.");
                 }
 
                 return new Tuple<bool, List<string>>(false, null);
@@ -76,7 +76,7 @@ namespace WindowsNative
                 {
                     if (!hideOutput)
                     {
-                        SimpleLog.Log(logComponent, inputAddress + " reversed to: " + inputAddress);
+                        Logger.Log(logComponent, inputAddress + " reversed to: " + inputAddress);
                     }
 
                     return inputAddress;
@@ -88,7 +88,7 @@ namespace WindowsNative
                 {
                     if (!hideOutput)
                     {
-                        SimpleLog.Log(logComponent, inputAddress + " reversed to: " + HostEntry.HostName);
+                        Logger.Log(logComponent, inputAddress + " reversed to: " + HostEntry.HostName);
                     }
 
                     return HostEntry.HostName;
@@ -102,7 +102,7 @@ namespace WindowsNative
             {
                 if (!hideOutput)
                 {
-                    SimpleLog.Log(logComponent, "Unable to reverse [" + inputAddress + "] to hostname.");
+                    Logger.Log(logComponent, "Unable to reverse [" + inputAddress + "] to hostname.");
                 }
 
                 return null;
@@ -111,7 +111,7 @@ namespace WindowsNative
             {
                 if (!hideOutput)
                 {
-                    SimpleLog.Log(logComponent, e, "Reverse name lookup exception.");
+                    Logger.Log(logComponent, e, "Reverse name lookup exception.");
                 }
 
                 return null;
@@ -139,7 +139,7 @@ namespace WindowsNative
 
         public static bool TestURL(string logComponent, string url, TimeSpan timeout)
         {
-            SimpleLog.Log(logComponent, "Test URL: " + url + " [Timeout=" + timeout.TotalSeconds + "s]");
+            Logger.Log(logComponent, "Test URL: " + url + " [Timeout=" + timeout.TotalSeconds + "s]");
 
             try
             {
@@ -149,7 +149,7 @@ namespace WindowsNative
 
                 if (result.Status == System.Threading.Tasks.TaskStatus.RanToCompletion)
                 {
-                    SimpleLog.Log(logComponent, "HTTP Response: " + result.Result.StatusCode.ToString());
+                    Logger.Log(logComponent, "HTTP Response: " + result.Result.StatusCode.ToString());
 
                     if (result.Result.StatusCode == HttpStatusCode.OK)
                     {
@@ -162,13 +162,13 @@ namespace WindowsNative
                 }
                 else
                 {
-                    SimpleLog.Log(logComponent, "HTTP Response: TIMEOUT ERROR [" + result.Status.ToString() + "].");
+                    Logger.Log(logComponent, "HTTP Response: TIMEOUT ERROR [" + result.Status.ToString() + "].");
                     return false;
                 }
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Test connection failed to [" + url + "].");
+                Logger.Log(logComponent, e, "Test connection failed to [" + url + "].");
                 return false;
             }
         }

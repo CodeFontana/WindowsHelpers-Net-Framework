@@ -138,7 +138,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, $"Failed to ENABLE adapter [{ AdapterName }].");
+                Logger.Log(logComponent, e, $"Failed to ENABLE adapter [{ AdapterName }].");
                 return false;
             }
         }
@@ -167,7 +167,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, $"Failed to configure adapter [{ AdapterName }] for static IP address.");
+                Logger.Log(logComponent, e, $"Failed to configure adapter [{ AdapterName }] for static IP address.");
                 return false;
             }
         }
@@ -239,7 +239,7 @@ namespace WindowsNative
                         }
                         catch (Exception e)
                         {
-                            SimpleLog.Log(logComponent, e, $"Failed to query adapter current configuration for [{ newAdapter.AdapterName }].");
+                            Logger.Log(logComponent, e, $"Failed to query adapter current configuration for [{ newAdapter.AdapterName }].");
                         }
                     }
 

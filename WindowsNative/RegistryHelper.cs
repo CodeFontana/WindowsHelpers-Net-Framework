@@ -18,7 +18,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to copy registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                Logger.Log(logComponent, e, "Failed to copy registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
 
             foreach (string strSubKey in sourceKey.GetSubKeyNames())
@@ -34,7 +34,7 @@ namespace WindowsNative
                 }
                 catch (Exception e)
                 {
-                    SimpleLog.Log(logComponent, e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
+                    Logger.Log(logComponent, e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
                 }
             }
         }
@@ -47,7 +47,7 @@ namespace WindowsNative
             {
                 if (sourceKey.GetValue(sourceValueName) == null)
                 {
-                    SimpleLog.Log(logComponent, "Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", Logger.MsgType.ERROR);
                 }
 
                 destKey.SetValue(destValueName,
@@ -56,7 +56,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                Logger.Log(logComponent, e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
         }
 
@@ -113,7 +113,7 @@ namespace WindowsNative
                         if (DeleteSubKeysWithValue(logComponent, regHive, regKey + "\\" + subKey, valueName, valueData))
                         {
                             regSubKey.Dispose();
-                            SimpleLog.Log(logComponent, "Delete registry: " + regHive.ToString() + "\\" + regKey + "\\" + valueName + " = " + valueData);
+                            Logger.Log(logComponent, "Delete registry: " + regHive.ToString() + "\\" + regKey + "\\" + valueName + " = " + valueData);
                             return DeleteSubKeyTree(logComponent, regHive, regKey + "\\" + subKey);
                         }
                     }
@@ -151,7 +151,7 @@ namespace WindowsNative
                 if (regTest != null)
                 {
                     regTest.Dispose();
-                    SimpleLog.Log(logComponent, "Delete registry (32-bit): " + regHive + "\\" + regKey);
+                    Logger.Log(logComponent, "Delete registry (32-bit): " + regHive + "\\" + regKey);
                     baseKey32.DeleteSubKeyTree(regKey, false);
                     isFound = true;
                 }
@@ -165,7 +165,7 @@ namespace WindowsNative
                     if (regTest != null)
                     {
                         regTest.Dispose();
-                        SimpleLog.Log(logComponent, "Delete registry (64-bit): " + regHive + "\\" + regKey);
+                        Logger.Log(logComponent, "Delete registry (64-bit): " + regHive + "\\" + regKey);
                         baseKey64.DeleteSubKeyTree(regKey, false);
                         isFound = true;
                     }
@@ -199,7 +199,7 @@ namespace WindowsNative
                     if (regTest != null && regTest.GetValue(regValue) != null)
                     {
                         object regData = regTest.GetValue(regValue);
-                        SimpleLog.Log(logComponent, "Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
+                        Logger.Log(logComponent, "Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
                         regTest.DeleteValue(regValue);
                         valueDeleted = true;
                         baseKey64.Dispose();
@@ -215,7 +215,7 @@ namespace WindowsNative
                 if (regTest != null && regTest.GetValue(regValue) != null)
                 {
                     object regData = regTest.GetValue(regValue);
-                    SimpleLog.Log(logComponent, "Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
+                    Logger.Log(logComponent, "Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
                     regTest.DeleteValue(regValue);
                     valueDeleted = true;
                     regTest.Dispose();
@@ -225,7 +225,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to delete registry value.");
+                Logger.Log(logComponent, e, "Failed to delete registry value.");
                 return valueDeleted;
             }
         }
@@ -325,7 +325,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to move registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                Logger.Log(logComponent, e, "Failed to move registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
 
             foreach (string strSubKey in sourceKey.GetSubKeyNames())
@@ -347,7 +347,7 @@ namespace WindowsNative
                 }
                 catch (Exception e)
                 {
-                    SimpleLog.Log(logComponent, e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
+                    Logger.Log(logComponent, e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
                 }
             }
         }
@@ -360,7 +360,7 @@ namespace WindowsNative
             {
                 if (sourceKey.GetValue(sourceValueName) == null)
                 {
-                    SimpleLog.Log(logComponent, "Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", Logger.MsgType.ERROR);
                 }
 
                 destKey.SetValue(destValueName, 
@@ -371,7 +371,7 @@ namespace WindowsNative
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                Logger.Log(logComponent, e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
         }
 

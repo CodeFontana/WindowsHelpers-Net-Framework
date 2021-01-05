@@ -33,7 +33,7 @@ namespace WindowsNative
 
                 if (scManagerHandle == IntPtr.Zero)
                 {
-                    SimpleLog.Log(logComponent, "Unable to open service control manager.", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Unable to open service control manager.", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -44,7 +44,7 @@ namespace WindowsNative
 
                 if (serviceHandle == IntPtr.Zero)
                 {
-                    SimpleLog.Log(logComponent, "Unable to open specified service [" + serviceName + "].", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Unable to open specified service [" + serviceName + "].", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -63,14 +63,14 @@ namespace WindowsNative
 
                 if (!configSuccess)
                 {
-                    SimpleLog.Log(logComponent, "Unable to configure service logon user [ChangeServiceConfig=" +
-                        Marshal.GetLastWin32Error().ToString() + "].", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Unable to configure service logon user [ChangeServiceConfig=" +
+                        Marshal.GetLastWin32Error().ToString() + "].", Logger.MsgType.ERROR);
                     return false;
                 }
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to change service logon user.");
+                Logger.Log(logComponent, e, "Failed to change service logon user.");
             }
             finally
             {
@@ -94,7 +94,7 @@ namespace WindowsNative
 
                 if (scManagerHandle == IntPtr.Zero)
                 {
-                    SimpleLog.Log(logComponent, "Unable to open service control manager.", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Unable to open service control manager.", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -105,7 +105,7 @@ namespace WindowsNative
 
                 if (serviceHandle == IntPtr.Zero)
                 {
-                    SimpleLog.Log(logComponent, "Unable to open specified service [" + serviceName + "].", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Unable to open specified service [" + serviceName + "].", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -124,14 +124,14 @@ namespace WindowsNative
 
                 if (!configSuccess)
                 {
-                    SimpleLog.Log(logComponent, "Unable to configure service startup mode [ChangeServiceConfig=" +
-                        Marshal.GetLastWin32Error().ToString() + "].", SimpleLog.MsgType.ERROR);
+                    Logger.Log(logComponent, "Unable to configure service startup mode [ChangeServiceConfig=" +
+                        Marshal.GetLastWin32Error().ToString() + "].", Logger.MsgType.ERROR);
                     return false;
                 }
             }
             catch (Exception e)
             {
-                SimpleLog.Log(logComponent, e, "Failed to change service startup mode.");
+                Logger.Log(logComponent, e, "Failed to change service startup mode.");
             }
             finally
             {
