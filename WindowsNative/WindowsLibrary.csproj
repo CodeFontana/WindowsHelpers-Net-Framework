@@ -63,9 +63,9 @@
     <Compile Include="WindowsHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GroupPolicy\GroupPolicyLibrary.csproj">
+    <ProjectReference Include="..\GroupPolicy\LocalPolicyLibrary.csproj">
       <Project>{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}</Project>
-      <Name>GroupPolicyLibrary</Name>
+      <Name>LocalPolicyLibrary</Name>
     </ProjectReference>
     <ProjectReference Include="..\SimpleLogger\LoggerLibrary.csproj">
       <Project>{1c1cf399-1e5c-48ca-8f55-0b4156c8f19f}</Project>

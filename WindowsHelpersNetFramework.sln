@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoggerLibrary", "SimpleLogg
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsLibrary", "WindowsNative\WindowsLibrary.csproj", "{8C5E53AF-8775-46C7-AD36-B1615A5E8A9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupPolicyLibrary", "GroupPolicy\GroupPolicyLibrary.csproj", "{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalPolicyLibrary", "GroupPolicy\LocalPolicyLibrary.csproj", "{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
