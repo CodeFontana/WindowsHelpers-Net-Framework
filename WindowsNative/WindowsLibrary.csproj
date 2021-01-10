@@ -63,13 +63,13 @@
     <Compile Include="WindowsHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GroupPolicy\GroupPolicy.csproj">
+    <ProjectReference Include="..\GroupPolicy\GroupPolicyLibrary.csproj">
       <Project>{D3BC55FD-2C4E-4006-96BC-E84CA2AEA7CC}</Project>
-      <Name>GroupPolicy</Name>
+      <Name>GroupPolicyLibrary</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj">
+    <ProjectReference Include="..\SimpleLogger\LoggerLibrary.csproj">
       <Project>{1c1cf399-1e5c-48ca-8f55-0b4156c8f19f}</Project>
-      <Name>SimpleLogger</Name>
+      <Name>LoggerLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
