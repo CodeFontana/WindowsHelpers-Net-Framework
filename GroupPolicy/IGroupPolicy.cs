@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace LocalPolicy.COM
+namespace LocalPolicyLibrary.COM
 {
     [ComImport, Guid("EA502722-A23D-11d1-A7D3-0000F87571E3")]
     internal class GPClass

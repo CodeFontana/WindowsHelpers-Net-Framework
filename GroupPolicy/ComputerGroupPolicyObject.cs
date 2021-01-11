@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace LocalPolicy
+namespace LocalPolicyLibrary
 {
     public class ComputerGroupPolicyObject : GroupPolicyObject
     {

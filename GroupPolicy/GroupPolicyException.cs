@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LocalPolicy
+namespace LocalPolicyLibrary
 {
     public class GroupPolicyException : Exception
     {

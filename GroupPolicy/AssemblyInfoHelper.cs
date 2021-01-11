@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace LocalPolicy
+namespace LocalPolicyLibrary
 {
     internal class AssemblyInfoHelper
     {

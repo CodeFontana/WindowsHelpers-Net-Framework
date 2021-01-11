@@ -1,5 +1,5 @@
 ﻿
-namespace LocalPolicy
+namespace LocalPolicyLibrary
 {
     public struct GroupPolicyObjectOptions
     {

@@ -1,4 +1,4 @@
-﻿namespace LocalPolicy
+﻿namespace LocalPolicyLibrary
 {
     public class GroupPolicyObjectSettings
     {

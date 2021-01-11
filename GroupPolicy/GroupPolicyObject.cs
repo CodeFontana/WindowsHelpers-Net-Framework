@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
-namespace LocalPolicy
+namespace LocalPolicyLibrary
 {
     public abstract class GroupPolicyObject
     {
@@ -20,7 +20,7 @@ namespace LocalPolicy
         /// </summary>
         private static readonly Guid LocalGuid = new Guid(AssemblyInfoHelper.GetAssemblyAttribute<GuidAttribute>().Value);
 
-        protected LocalPolicy.COM.IGroupPolicyObject instance = null;
+        protected LocalPolicyLibrary.COM.IGroupPolicyObject instance = null;
 
         internal GroupPolicyObject()
         {
@@ -121,12 +121,12 @@ namespace LocalPolicy
 
         public abstract string GetPathTo(GroupPolicySection section);
 
-        protected static LocalPolicy.COM.IGroupPolicyObject getInstance()
+        protected static LocalPolicyLibrary.COM.IGroupPolicyObject getInstance()
         {
             return withSingleThreadedApartmentCheck(() =>
             {
-                var concrete = new LocalPolicy.COM.GPClass();
-                return (LocalPolicy.COM.IGroupPolicyObject)concrete;
+                var concrete = new LocalPolicyLibrary.COM.GPClass();
+                return (LocalPolicyLibrary.COM.IGroupPolicyObject)concrete;
             });
         }
         protected static T withSingleThreadedApartmentCheck<T>(Func<T> operation)
