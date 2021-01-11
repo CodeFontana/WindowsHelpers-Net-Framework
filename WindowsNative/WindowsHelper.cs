@@ -12,9 +12,9 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
 using System.DirectoryServices.AccountManagement;
-using SimpleLogger;
+using LoggerLibrary;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public static class WindowsHelper
     {

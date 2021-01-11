@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Management;
 using System.Runtime.InteropServices;
-using SimpleLogger;
+using LoggerLibrary;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public class PageFile
     {

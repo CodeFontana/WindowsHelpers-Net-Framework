@@ -5,7 +5,7 @@ using System.Management;
 using System.Security.Principal;
 using System.IO;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public class ProcessInfo
     {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.Win32;
-using SimpleLogger;
+using LoggerLibrary;
 using System;
 using System.Linq;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public static class RegistryHelper
     {

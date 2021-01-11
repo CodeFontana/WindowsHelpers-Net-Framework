@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public class NativeMethods
     {

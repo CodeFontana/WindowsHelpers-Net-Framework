@@ -1,9 +1,9 @@
-﻿using SimpleLogger;
+﻿using LoggerLibrary;
 using System;
 using System.Collections.Generic;
 using System.Management;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public class NetworkAdapter
     {

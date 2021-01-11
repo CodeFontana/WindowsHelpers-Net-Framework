@@ -1,4 +1,4 @@
-﻿using SimpleLogger;
+﻿using LoggerLibrary;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public static class NetworkHelper
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
 	public class NumericComparer : IComparer
 	{

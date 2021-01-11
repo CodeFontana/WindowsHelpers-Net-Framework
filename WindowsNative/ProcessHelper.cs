@@ -1,4 +1,4 @@
-﻿using SimpleLogger;
+﻿using LoggerLibrary;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public static class ProcessHelper
     {

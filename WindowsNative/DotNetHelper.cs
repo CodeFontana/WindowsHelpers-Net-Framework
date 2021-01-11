@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public static class DotNetHelper
     {

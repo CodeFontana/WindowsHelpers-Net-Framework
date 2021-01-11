@@ -1,6 +1,6 @@
-﻿using LocalPolicy;
+﻿using LocalPolicyLibrary;
 using Microsoft.Win32.SafeHandles;
-using SimpleLogger;
+using LoggerLibrary;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +12,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public static class FileSystemHelper
     {

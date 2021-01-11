@@ -61,6 +61,7 @@
     <Compile Include="RegistryHelper.cs" />
     <Compile Include="ServiceHelper.cs" />
     <Compile Include="WindowsHelper.cs" />
+    <Compile Include="WMIHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GroupPolicy\LocalPolicyLibrary.csproj">

@@ -1,10 +1,10 @@
-﻿using SimpleLogger;
+﻿using LoggerLibrary;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 
-namespace WindowsNative
+namespace WindowsLibrary
 {
     public static class ServiceHelper
     {
