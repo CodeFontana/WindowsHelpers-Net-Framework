@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace SimpleLogger
+namespace LoggerLibrary
 {
     public class Logger
     {
@@ -38,8 +38,7 @@ namespace SimpleLogger
         public Logger(string logName, string logPath = null, long maxBytes = 50 * 1048576, uint maxCount = 10)
         {
             Open(logName, logPath, maxBytes, maxCount);
-            Log("####################################################################################################");
-            Log($"Log start -- {LogComponent}");
+            Log($"## Log Start ###################################################################");
         }
 
         /// <summary>
@@ -181,15 +180,9 @@ namespace SimpleLogger
             {
                 lock (_lockObj)
                 {
-                    // Don't call Log() to write the footer, this will
-                    // result in a StackOverflow.
-                    Console.WriteLine(MsgHeader(LogComponent, MsgType.INFO) + $"Log end -- {LogComponent}");
-                    _logWriter.WriteLine(MsgHeader(LogComponent, MsgType.INFO) + $"Log end -- {LogComponent}");
-                    Console.WriteLine(MsgHeader(LogComponent, MsgType.INFO) + 
-                        "####################################################################################################");
-                    _logWriter.Write(MsgHeader(LogComponent, MsgType.INFO) +
-                        "####################################################################################################");
-
+                    // Don't call Log() to write the footer, this will result in a -=#StackOverflow#=-.
+                    Console.WriteLine(MsgHeader(LogComponent, MsgType.INFO) + "## Log End #####################################################################");
+                    _logWriter.WriteLine(MsgHeader(LogComponent, MsgType.INFO) + "## Log End #####################################################################");
                     _logWriter.Dispose();
                     _logStream.Dispose();
                     _logWriter = null;
