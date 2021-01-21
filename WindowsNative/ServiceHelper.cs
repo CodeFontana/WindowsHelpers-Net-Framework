@@ -144,6 +144,115 @@ namespace WindowsLibrary
             return true;
         }
 
+        public static bool ConfigureRestartActions(string logComponent, string serviceName)
+        {
+            /* Note: For now, this function is hard-coded to set recovery actions
+             *       that will restart the service, waiting 60s between restart
+             *       attempts. It could be enhanced in the future, to take these
+             *       actions as parameters, and configure accordingly.
+             */
+
+            IntPtr scManagerHandle = IntPtr.Zero;
+            IntPtr actionsBuffer = IntPtr.Zero;
+            IntPtr scManagerLockHandle = IntPtr.Zero;
+            IntPtr serviceHandle = IntPtr.Zero;
+
+            try
+            {
+                if (ServiceExists(serviceName) == false)
+                {
+                    Logger.Log(logComponent, $"ERROR: Service does not exist [{serviceName}].");
+                    return false;
+                }
+
+                scManagerHandle = NativeMethods.OpenSCManagerA(
+                    null, null,
+                    NativeMethods.ServiceControlManagerType.SC_MANAGER_ALL_ACCESS);
+
+                if (scManagerHandle == IntPtr.Zero)
+                {
+                    Logger.Log(logComponent, "ERROR: Unable to open service control manager.");
+                    return false;
+                }
+
+                scManagerLockHandle = NativeMethods.LockServiceDatabase(scManagerHandle);
+
+                if (scManagerLockHandle == IntPtr.Zero)
+                {
+                    Logger.Log(logComponent, "ERROR: Unable to lock service control manager database.");
+                    return false;
+                }
+
+                serviceHandle = NativeMethods.OpenServiceA(
+                    scManagerHandle,
+                    serviceName,
+                    NativeMethods.ACCESS_TYPE.SERVICE_ALL_ACCESS);
+
+                if (serviceHandle == IntPtr.Zero)
+                {
+                    Logger.Log(logComponent, "ERROR: Unable to open specified service [" + serviceName + "].");
+                    return false;
+                }
+
+                NativeMethods.SC_ACTION[] scActions = new NativeMethods.SC_ACTION[3];
+                NativeMethods.SERVICE_FAILURE_ACTIONS serviceFailureActions; // Reference: https://docs.microsoft.com/en-us/windows/win32/api/winsvc/ns-winsvc-service_failure_actionsa
+                serviceFailureActions.dwResetPeriod = 24 * 3600; // The time after which to reset the failure count to zero if there are no failures, in seconds.
+                serviceFailureActions.lpRebootMsg = ""; // No broadcast message.
+                serviceFailureActions.lpCommand = null; // If this value is NULL, the command is unchanged.
+                serviceFailureActions.cActions = scActions.Length; // (3) failure actions.
+                scActions[0].Delay = 60000;
+                scActions[0].SCActionType = NativeMethods.SC_ACTION_TYPE.SC_ACTION_RESTART;
+                scActions[1].Delay = 60000;
+                scActions[1].SCActionType = NativeMethods.SC_ACTION_TYPE.SC_ACTION_RESTART;
+                scActions[2].Delay = 60000;
+                scActions[2].SCActionType = NativeMethods.SC_ACTION_TYPE.SC_ACTION_RESTART;
+
+                actionsBuffer = Marshal.AllocHGlobal(Marshal.SizeOf(new NativeMethods.SC_ACTION()) * 3);
+                NativeMethods.CopyMemory(actionsBuffer, scActions, Marshal.SizeOf(new NativeMethods.SC_ACTION()) * 3);
+                serviceFailureActions.lpsaActions = actionsBuffer;
+
+                bool configSuccess = NativeMethods.ChangeServiceConfig2A(
+                    serviceHandle,
+                    NativeMethods.InfoLevel.SERVICE_CONFIG_FAILURE_ACTIONS,
+                    ref serviceFailureActions);
+
+                if (!configSuccess)
+                {
+                    Logger.Log(logComponent, "ERROR: Unable to configure service failure actions [ChangeServiceConfig2A=" +
+                        Marshal.GetLastWin32Error().ToString() + "].");
+                    return false;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log(logComponent, e, "Failed to configure service failure actions.");
+            }
+            finally
+            {
+                if (actionsBuffer != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(actionsBuffer);
+                }
+
+                if (serviceHandle != IntPtr.Zero)
+                {
+                    NativeMethods.CloseServiceHandle(serviceHandle);
+                }
+
+                if (scManagerLockHandle != IntPtr.Zero)
+                {
+                    NativeMethods.UnlockServiceDatabase(scManagerLockHandle);
+                }
+
+                if (scManagerHandle != IntPtr.Zero)
+                {
+                    NativeMethods.CloseServiceHandle(scManagerHandle);
+                }
+            }
+
+            return true;
+        }
+
         public static bool ServiceExists(string serviceName)
         {
             ServiceController[] sc = ServiceController.GetServices();

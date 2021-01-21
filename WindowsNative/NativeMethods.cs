@@ -61,6 +61,12 @@ namespace WindowsLibrary
             String lpPassword,
             String lpDisplayName);
 
+        [DllImport("advapi32.dll")]
+        public static extern bool ChangeServiceConfig2A(
+            IntPtr hService,
+            InfoLevel dwInfoLevel,
+            [MarshalAs(UnmanagedType.Struct)] ref SERVICE_FAILURE_ACTIONS lpInfo);
+
         [DllImport("User32.Dll")]
         public static extern bool ClientToScreen(IntPtr hWnd, ref POINT point);
 
@@ -76,6 +82,9 @@ namespace WindowsLibrary
 
         [DllImport("User32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr CloseWindowStation(IntPtr hWinSta);
+
+        [DllImport("kernel32.dll")]
+        public static extern void CopyMemory(IntPtr pDst, SC_ACTION[] pSrc, int ByteLen);
 
         [DllImport("userenv.dll", SetLastError = true)]
         public static extern bool CreateEnvironmentBlock(out IntPtr lpEnvironment, IntPtr hToken, bool bInherit);
@@ -229,6 +238,9 @@ namespace WindowsLibrary
         [DllImportAttribute("kernel32.dll", EntryPoint = "LocalFree")]
         public static extern IntPtr LocalFree(IntPtr hMem);
 
+        [DllImport("advapi32.dll")]
+        public static extern IntPtr LockServiceDatabase(IntPtr hSCManager);
+
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool LogonUser(
@@ -294,8 +306,14 @@ namespace WindowsLibrary
         [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerW", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr OpenSCManager(string machineName, string databaseName, uint dwAccess);
 
+        [DllImport("advapi32.dll")]
+        public static extern IntPtr OpenSCManagerA(string lpMachineName, string lpDatabaseName, ServiceControlManagerType dwDesiredAccess);
+
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, uint dwDesiredAccess);
+
+        [DllImport("advapi32.dll")]
+        public static extern IntPtr OpenServiceA(IntPtr hSCManager, string lpServiceName, ACCESS_TYPE dwDesiredAccess);
 
         [DllImport("User32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr OpenWindowStation(string name, bool fInherit, uint needAccess);
@@ -367,6 +385,9 @@ namespace WindowsLibrary
 
         [DllImport("Userenv.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool UnloadUserProfile(IntPtr hToken, IntPtr lpProfileInfo);
+
+        [DllImport("advapi32.dll")]
+        public static extern bool UnlockServiceDatabase(IntPtr hSCManager);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
@@ -745,6 +766,55 @@ namespace WindowsLibrary
             public ACCESS_MODE grfAccessMode;
             public uint grfInheritance;
             public TRUSTEE Trustee;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SERVICE_STATUS
+        {
+            public int dwServiceType;
+            public int dwCurrentState;
+            public int dwControlsAccepted;
+            public int dwWin32ExitCode;
+            public int dwServiceSpecificExitCode;
+            public int dwCheckPoint;
+            public int dwWaitHint;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct QUERY_SERVICE_CONFIG
+        {
+            public int dwServiceType;
+            public int dwStartType;
+            public int dwErrorControl;
+            public string lpBinaryPathName;
+            public string lpLoadOrderGroup;
+            public int dwTagId;
+            public string lpDependencies;
+            public string lpServiceStartName;
+            public string lpDisplayName;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SC_ACTION
+        {
+            public SC_ACTION_TYPE SCActionType;
+            public int Delay;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SERVICE_DESCRIPTION
+        {
+            public string lpDescription;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SERVICE_FAILURE_ACTIONS
+        {
+            public int dwResetPeriod;
+            public string lpRebootMsg;
+            public string lpCommand;
+            public int cActions;
+            public IntPtr lpsaActions;
         }
 
         // ******************************
@@ -1451,6 +1521,62 @@ namespace WindowsLibrary
             REVOKE_ACCESS,
             SET_AUDIT_SUCCESS,
             SET_AUDIT_FAILURE
+        }
+
+        public enum ServiceControlManagerType : int
+        {
+            SC_MANAGER_CONNECT = 0x1,
+            SC_MANAGER_CREATE_SERVICE = 0x2,
+            SC_MANAGER_ENUMERATE_SERVICE = 0x4,
+            SC_MANAGER_LOCK = 0x8,
+            SC_MANAGER_QUERY_LOCK_STATUS = 0x10,
+            SC_MANAGER_MODIFY_BOOT_CONFIG = 0x20,
+            SC_MANAGER_ALL_ACCESS =
+                (int)STANDARD_RIGHTS_REQUIRED +
+                SC_MANAGER_CONNECT +
+                SC_MANAGER_CREATE_SERVICE +
+                SC_MANAGER_ENUMERATE_SERVICE +
+                SC_MANAGER_LOCK +
+                SC_MANAGER_QUERY_LOCK_STATUS +
+                SC_MANAGER_MODIFY_BOOT_CONFIG
+        }
+
+        public enum ACCESS_TYPE : int
+        {
+            SERVICE_QUERY_CONFIG = 0x1,
+            SERVICE_CHANGE_CONFIG = 0x2,
+            SERVICE_QUERY_STATUS = 0x4,
+            SERVICE_ENUMERATE_DEPENDENTS = 0x8,
+            SERVICE_START = 0x10,
+            SERVICE_STOP = 0x20,
+            SERVICE_PAUSE_CONTINUE = 0x40,
+            SERVICE_INTERROGATE = 0x80,
+            SERVICE_USER_DEFINED_CONTROL = 0x100,
+            SERVICE_ALL_ACCESS =
+                (int)STANDARD_RIGHTS_REQUIRED +
+                SERVICE_QUERY_CONFIG +
+                SERVICE_CHANGE_CONFIG +
+                SERVICE_QUERY_STATUS +
+                SERVICE_ENUMERATE_DEPENDENTS +
+                SERVICE_START +
+                SERVICE_STOP +
+                SERVICE_PAUSE_CONTINUE +
+                SERVICE_INTERROGATE +
+                SERVICE_USER_DEFINED_CONTROL
+        }
+
+        public enum SC_ACTION_TYPE : int
+        {
+            SC_ACTION_NONE = 0,
+            SC_ACTION_RESTART = 1,
+            SC_ACTION_REBOOT = 2,
+            SC_ACTION_RUN_COMMAND = 3,
+        }
+
+        public enum InfoLevel : int
+        {
+            SERVICE_CONFIG_DESCRIPTION = 1,
+            SERVICE_CONFIG_FAILURE_ACTIONS = 2
         }
 
         // ******************************
