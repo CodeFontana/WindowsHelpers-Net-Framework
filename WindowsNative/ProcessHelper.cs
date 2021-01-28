@@ -684,7 +684,7 @@ namespace WindowsLibrary
                 p.StartInfo.FileName = appFileName.Replace("\\\\", "\\");
                 p.StartInfo.Arguments = arguments;
                 p.StartInfo.WorkingDirectory = workingDirectory;
-                p.StartInfo.UseShellExecute = false; // Use CreateProcess() API, *NOT* ShellExecute() API
+                p.StartInfo.UseShellExecute = false; // Use CreateProcess(), *NOT* ShellExecute()
                 p.StartInfo.RedirectStandardOutput = true; // Redirect STDOUT
                 p.StartInfo.RedirectStandardError = true; // Redirect STDERR
                 p.StartInfo.CreateNoWindow = hideWindow; // Passed into function
@@ -709,7 +709,7 @@ namespace WindowsLibrary
             {
                 p.Start();
 
-                // Create async thread for consuming the STDOUT stream.
+                // Create async task for consuming the STDOUT/STDERR streams.
                 async Task ConsumeOutputAsync(StreamReader outputStream)
                 {
                     string textLine;
@@ -717,7 +717,10 @@ namespace WindowsLibrary
                     while (!cts.Token.IsCancellationRequested &&
                         (textLine = await outputStream.ReadLineAsync()) != null)
                     {
-                        combinedOutput.Add(textLine);
+                        lock (combinedOutput)
+                        {
+                            combinedOutput.Add(textLine);
+                        }
 
                         if (!hideStreamOutput && !hideExecution)
                         {
@@ -775,15 +778,20 @@ namespace WindowsLibrary
                 {
                     Logger.Log(logComponent, Path.GetFileName(appFileName) + " return code: " + ExitCode.ToString());
                 }
-
-                cts.Dispose();
-                p.Dispose();
+                
                 return Tuple.Create((long)ExitCode, String.Join(Environment.NewLine, combinedOutput.ToList()));
             }
             catch (Exception e)
             {
                 Logger.Log(logComponent, e, "New process monitoring failure.");
                 return Tuple.Create((long)-1, "");
+            }
+            finally
+            {
+                cts.Dispose();
+                p.Dispose();
+                if (consumeStdOut != null) consumeStdOut.Dispose();
+                if (consumeStdErr != null) consumeStdErr.Dispose();
             }
         }
 
