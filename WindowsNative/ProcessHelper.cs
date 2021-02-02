@@ -788,10 +788,14 @@ namespace WindowsLibrary
             }
             finally
             {
-                cts.Dispose();
-                p.Dispose();
-                if (consumeStdOut != null) consumeStdOut.Dispose();
-                if (consumeStdErr != null) consumeStdErr.Dispose();
+                try { if (consumeStdOut != null) { consumeStdOut.Dispose(); } }
+                catch (Exception e) { Logger.Log(logComponent, e, "Resource disposal failure [consumeStdOut]."); }
+                try { if (consumeStdErr != null) { consumeStdErr.Dispose(); } }
+                catch (Exception e) { Logger.Log(logComponent, e, "Resource disposal failure [consumeStdErr]."); }
+                try { cts.Dispose(); }
+                catch (Exception e) { Logger.Log(logComponent, e, "Resource disposal failure [cts]."); }
+                try { p.Dispose(); }
+                catch (Exception e) { Logger.Log(logComponent, e, "Resource disposal failure [p]."); }
             }
         }
 
