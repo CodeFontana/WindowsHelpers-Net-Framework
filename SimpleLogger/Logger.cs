@@ -38,7 +38,6 @@ namespace LoggerLibrary
         public Logger(string logName, string logPath = null, long maxBytes = 50 * 1048576, uint maxCount = 10)
         {
             Open(logName, logPath, maxBytes, maxCount);
-            Log($"## Log Start ###################################################################");
         }
 
         /// <summary>
@@ -181,8 +180,6 @@ namespace LoggerLibrary
                 lock (_lockObj)
                 {
                     // Don't call Log() to write the footer, this will result in a -=#StackOverflow#=-.
-                    Console.WriteLine(MsgHeader(LogComponent, MsgType.INFO) + "## Log End #####################################################################");
-                    _logWriter.WriteLine(MsgHeader(LogComponent, MsgType.INFO) + "## Log End #####################################################################");
                     _logWriter.Dispose();
                     _logStream.Dispose();
                     _logWriter = null;
