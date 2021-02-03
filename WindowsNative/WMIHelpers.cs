@@ -8,15 +8,21 @@ using System.Threading.Tasks;
 
 namespace WindowsLibrary
 {
-    public static class WMIHelper
+    public class WMIHelper
     {
+        private Logger _logger;
+
+        public WMIHelper(Logger logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Gets the available WMI namespaces for the specified management scope.
         /// </summary>
-        /// <param name="logComponent">The Logger instance (or component) to forward the log message.</param>
         /// <param name="rootPath">WMI Management Scope path. Default is "root".</param>
         /// <returns>Returns a list of available WMI namespaces.</returns>
-        public static List<string> GetWmiNamespaces(string logComponent, string rootPath = "root")
+        public List<string> GetWmiNamespaces(string rootPath = "root")
         {
             var namespaces = new List<string>();
 
@@ -28,12 +34,12 @@ namespace WindowsLibrary
                 {
                     string namespaceName = rootPath + "\\" + ns["Name"].ToString();
                     namespaces.Add(namespaceName);
-                    namespaces.AddRange(GetWmiNamespaces(logComponent, namespaceName));
+                    namespaces.AddRange(GetWmiNamespaces(namespaceName));
                 }
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to query list of WMI namespaces.");
+                _logger.Log(e, "Failed to query list of WMI namespaces.");
             }
 
             return namespaces?.OrderBy(s => s).ToList() ?? namespaces;
@@ -42,10 +48,9 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets the available WMI classes for the specified namespace.
         /// </summary>
-        /// <param name="logComponent">The Logger instance (or component) to forward the log message.</param>
         /// <param name="wmiNamespaceName">The WMI namespace for obtaining the class list.</param>
         /// <returns>Returns a list of available classes in the WMI namespace.</returns>
-        public static List<string> GetClassNamesWithinWmiNamespace(string logComponent, string wmiNamespaceName)
+        public List<string> GetClassNamesWithinWmiNamespace(string wmiNamespaceName)
         {
             var classes = new List<string>();
 
@@ -65,7 +70,7 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, $"Failed to query class name list for namespace '{wmiNamespaceName}'.");
+                _logger.Log(e, $"Failed to query class name list for namespace '{wmiNamespaceName}'.");
             }
 
             return classes?.OrderBy(s => s).ToList() ?? classes;
@@ -74,11 +79,10 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets a list of properties (column names) for the specified WMI class.
         /// </summary>
-        /// <param name="logComponent">The Logger instance (or component) to forward the log message.</param>
         /// <param name="namespaceName">The WMI namespace which contains the class.</param>
         /// <param name="wmiClassName">The WMI class for obtaining the properties list.</param>
         /// <returns>A list of properties.</returns>
-        public static List<string> GetPropertiesOfWmiClass(string logComponent, string namespaceName, string wmiClassName)
+        public List<string> GetPropertiesOfWmiClass(string namespaceName, string wmiClassName)
         {
             var output = new List<string>();
 
@@ -105,7 +109,7 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, $"Failed to query properties of specified class '{namespaceName}\\{wmiClassName}'.");
+                _logger.Log(e, $"Failed to query properties of specified class '{namespaceName}\\{wmiClassName}'.");
             }
 
             return output;
@@ -114,13 +118,11 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets a list of WMI data, including property names, for the specified WMI class.
         /// </summary>
-        /// <param name="logComponent">The Logger instance (or component) to forward the log message.</param>
         /// <param name="namespaceName">The WMI namespace which contains the class.</param>
         /// <param name="wmiClassName">The WMI class for obtaining the properties list.</param>
         /// <param name="columns">The list of columns to retrieve, the default is null/* for all columns.</param>
         /// <returns>A list representing each row of data from the WMI class.</returns>
-        public static List<string[]> GetWMIData(
-            string logComponent,
+        public List<string[]> GetWMIData(
             string namespaceName,
             string wmiClassName,
             List<string> columns = null)
@@ -181,7 +183,7 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, $"Failed to query data from '{namespaceName}\\{wmiClassName}'.");
+                _logger.Log(e, $"Failed to query data from '{namespaceName}\\{wmiClassName}'.");
             }
 
             return output;
@@ -190,13 +192,12 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets a formatted list of WMI data, including property names, for the specified WMI class.
         /// </summary>
-        /// <param name="logComponent">The Logger instance (or component) to forward the log message.</param>
         /// <param name="namespaceName">The WMI namespace which contains the class.</param>
         /// <param name="wmiClassName">The WMI class for obtaining the properties list.</param>
         /// <param name="columns">The list of columns to retrieve, the default is null/* for all columns.</param>
         /// <param name="columnPadding">Padding (number of spaces) to add between columns of data in the return string.</param>
         /// <returns></returns>
-        public static string GetFormattedWMIData(string logComponent,
+        public string GetFormattedWMIData(
             string namespaceName,
             string wmiClassName,
             List<string> columns = null,
@@ -258,10 +259,10 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, $"Failed to query data from '{namespaceName}\\{wmiClassName}'.");
+                _logger.Log(e, $"Failed to query data from '{namespaceName}\\{wmiClassName}'.");
             }
 
-            return DotNetHelper.PadListElements(output, columnPadding);
+            return DotNetHelper.GetInstance().PadListElements(output, columnPadding);
         }
     }
 }

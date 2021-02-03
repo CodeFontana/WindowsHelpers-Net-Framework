@@ -51,10 +51,12 @@
     <Compile Include="DotNetHelper.cs" />
     <Compile Include="FileSystemHelper.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="NetworkAdapterHelper.cs" />
     <Compile Include="NetworkHelper.cs" />
     <Compile Include="NetworkAdapter.cs" />
     <Compile Include="NumericComparer.cs" />
     <Compile Include="PageFile.cs" />
+    <Compile Include="PageFileHelpers.cs" />
     <Compile Include="ProcessHelper.cs" />
     <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

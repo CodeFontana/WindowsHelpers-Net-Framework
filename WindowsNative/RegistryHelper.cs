@@ -5,9 +5,16 @@ using System.Linq;
 
 namespace WindowsLibrary
 {
-    public static class RegistryHelper
+    public class RegistryHelper
     {
-        public static void CopyKey(string logComponent, RegistryKey sourceKey, RegistryKey destKey)
+        private Logger _logger;
+
+        public RegistryHelper(Logger logger)
+        {
+            _logger = logger;
+        }
+
+        public void CopyKey(RegistryKey sourceKey, RegistryKey destKey)
         {
             try
             {
@@ -18,7 +25,7 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to copy registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                _logger.Log(e, "Failed to copy registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
 
             foreach (string strSubKey in sourceKey.GetSubKeyNames())
@@ -28,26 +35,24 @@ namespace WindowsLibrary
                     using (RegistryKey regSubKey = sourceKey.OpenSubKey(strSubKey, false))
                     {
                         RegistryKey dstSubKey = destKey.CreateSubKey(strSubKey);
-                        CopyKey(logComponent, regSubKey, dstSubKey);
+                        CopyKey(regSubKey, dstSubKey);
                         dstSubKey.Dispose();
                     }
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(logComponent, e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
+                    _logger.Log(e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
                 }
             }
         }
 
-        public static void CopyValue(string logComponent,
-            RegistryKey sourceKey, RegistryKey destKey,
-            string sourceValueName, string destValueName)
+        public void CopyValue(RegistryKey sourceKey, RegistryKey destKey, string sourceValueName, string destValueName)
         {
             try
             {
                 if (sourceKey.GetValue(sourceValueName) == null)
                 {
-                    Logger.Log(logComponent, "Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", Logger.MsgType.ERROR);
+                    _logger.Log("Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", Logger.MsgType.ERROR);
                 }
 
                 destKey.SetValue(destValueName,
@@ -56,12 +61,11 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                _logger.Log(e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
         }
 
-        public static bool DeleteSubKeysWithValue(string logComponent,
-            RegistryHive regHive, string regKey, string valueName, string valueData)
+        public bool DeleteSubKeysWithValue(RegistryHive regHive, string regKey, string valueName, string valueData)
         {
             try
             {
@@ -104,17 +108,17 @@ namespace WindowsLibrary
                     if (subKeyValue != null && subKeyValue.ToString().ToLower().Equals(valueData.ToLower()))
                     {
                         regSubKey.Dispose();
-                        
-                        return DeleteSubKeyTree(logComponent, regHive, regKey + "\\" + subKey);
+
+                        return DeleteSubKeyTree(regHive, regKey + "\\" + subKey);
                     }
                     else if (subKeyValue == null && regSubKey.SubKeyCount > 0)
                     {
                         // Does the subkey of the subkey contain a matching value-data entry?
-                        if (DeleteSubKeysWithValue(logComponent, regHive, regKey + "\\" + subKey, valueName, valueData))
+                        if (DeleteSubKeysWithValue(regHive, regKey + "\\" + subKey, valueName, valueData))
                         {
                             regSubKey.Dispose();
-                            Logger.Log(logComponent, "Delete registry: " + regHive.ToString() + "\\" + regKey + "\\" + valueName + " = " + valueData);
-                            return DeleteSubKeyTree(logComponent, regHive, regKey + "\\" + subKey);
+                            _logger.Log("Delete registry: " + regHive.ToString() + "\\" + regKey + "\\" + valueName + " = " + valueData);
+                            return DeleteSubKeyTree(regHive, regKey + "\\" + subKey);
                         }
                     }
                     else
@@ -133,7 +137,7 @@ namespace WindowsLibrary
             }
         }
 
-        public static bool DeleteSubKeyTree(string logComponent, RegistryHive regHive, string regKey)
+        public bool DeleteSubKeyTree(RegistryHive regHive, string regKey)
         {
             try
             {
@@ -151,7 +155,7 @@ namespace WindowsLibrary
                 if (regTest != null)
                 {
                     regTest.Dispose();
-                    Logger.Log(logComponent, "Delete registry (32-bit): " + regHive + "\\" + regKey);
+                    _logger.Log("Delete registry (32-bit): " + regHive + "\\" + regKey);
                     baseKey32.DeleteSubKeyTree(regKey, false);
                     isFound = true;
                 }
@@ -165,7 +169,7 @@ namespace WindowsLibrary
                     if (regTest != null)
                     {
                         regTest.Dispose();
-                        Logger.Log(logComponent, "Delete registry (64-bit): " + regHive + "\\" + regKey);
+                        _logger.Log("Delete registry (64-bit): " + regHive + "\\" + regKey);
                         baseKey64.DeleteSubKeyTree(regKey, false);
                         isFound = true;
                     }
@@ -181,7 +185,7 @@ namespace WindowsLibrary
             }
         }
 
-        public static bool DeleteValue(string logComponent, RegistryHive regHive, string regKey, string regValue)
+        public bool DeleteValue(RegistryHive regHive, string regKey, string regValue)
         {
             bool valueDeleted = false;
 
@@ -199,7 +203,7 @@ namespace WindowsLibrary
                     if (regTest != null && regTest.GetValue(regValue) != null)
                     {
                         object regData = regTest.GetValue(regValue);
-                        Logger.Log(logComponent, "Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
+                        _logger.Log("Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
                         regTest.DeleteValue(regValue);
                         valueDeleted = true;
                         baseKey64.Dispose();
@@ -215,7 +219,7 @@ namespace WindowsLibrary
                 if (regTest != null && regTest.GetValue(regValue) != null)
                 {
                     object regData = regTest.GetValue(regValue);
-                    Logger.Log(logComponent, "Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
+                    _logger.Log("Delete value: " + regHive.ToString() + "\\" + regKey + "\\" + regValue + $" [{regData}]");
                     regTest.DeleteValue(regValue);
                     valueDeleted = true;
                     regTest.Dispose();
@@ -225,12 +229,12 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to delete registry value.");
+                _logger.Log(e, "Failed to delete registry value.");
                 return valueDeleted;
             }
         }
 
-        public static RegistryKey GetParentKey(RegistryKey childKey, bool writable)
+        public RegistryKey GetParentKey(RegistryKey childKey, bool writable)
         {
             string[] regPath = childKey.Name.Split('\\');
             string childHive = regPath.First();
@@ -261,7 +265,7 @@ namespace WindowsLibrary
             }
         }
 
-        public static bool KeyExists(string regKey, RegistryHive regHive = RegistryHive.LocalMachine)
+        public bool KeyExists(string regKey, RegistryHive regHive = RegistryHive.LocalMachine)
         {
             try
             {
@@ -313,7 +317,7 @@ namespace WindowsLibrary
             }
         }
 
-        public static void MoveKey(string logComponent, RegistryKey sourceKey, RegistryKey destKey)
+        public void MoveKey(RegistryKey sourceKey, RegistryKey destKey)
         {
             try
             {
@@ -325,7 +329,7 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to move registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                _logger.Log(e, "Failed to move registry values from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
 
             foreach (string strSubKey in sourceKey.GetSubKeyNames())
@@ -335,7 +339,7 @@ namespace WindowsLibrary
                     using (RegistryKey regSubKey = sourceKey.OpenSubKey(strSubKey, false))
                     {
                         RegistryKey dstSubKey = destKey.CreateSubKey(strSubKey);
-                        MoveKey(logComponent, regSubKey, dstSubKey);
+                        MoveKey(regSubKey, dstSubKey);
                         destKey.Dispose();
 
                         using (RegistryKey parentKey = GetParentKey(regSubKey, true))
@@ -347,35 +351,33 @@ namespace WindowsLibrary
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(logComponent, e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
+                    _logger.Log(e, "Failed to copy registry subkey [" + strSubKey + "] to destination.");
                 }
             }
         }
 
-        public static void MoveValue(string logComponent,
-            RegistryKey sourceKey, RegistryKey destKey,
-            string sourceValueName, string destValueName)
+        public void MoveValue(RegistryKey sourceKey, RegistryKey destKey, string sourceValueName, string destValueName)
         {
             try
             {
                 if (sourceKey.GetValue(sourceValueName) == null)
                 {
-                    Logger.Log(logComponent, "Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", Logger.MsgType.ERROR);
+                    _logger.Log("Source value [" + sourceValueName + "] does not exist in [" + sourceKey.Name + "].", Logger.MsgType.ERROR);
                 }
 
-                destKey.SetValue(destValueName, 
-                    sourceKey.GetValue(sourceValueName, sourceValueName, RegistryValueOptions.DoNotExpandEnvironmentNames), 
+                destKey.SetValue(destValueName,
+                    sourceKey.GetValue(sourceValueName, sourceValueName, RegistryValueOptions.DoNotExpandEnvironmentNames),
                     sourceKey.GetValueKind(sourceValueName));
 
                 sourceKey.DeleteValue(sourceValueName, false);
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
+                _logger.Log(e, "Failed to move registry value [" + sourceValueName + "] from [" + sourceKey.Name + "] to [" + destKey.Name + "].");
             }
         }
 
-        public static RegistryKey OpenKey(string regKey, bool writable = false, RegistryHive regTree = RegistryHive.LocalMachine)
+        public RegistryKey OpenKey(string regKey, bool writable = false, RegistryHive regTree = RegistryHive.LocalMachine)
         {
             try
             {
@@ -414,7 +416,7 @@ namespace WindowsLibrary
             }
         }
 
-        public static bool ValueExists(string regKey, string regValueName, RegistryHive regHive = RegistryHive.LocalMachine)
+        public bool ValueExists(string regKey, string regValueName, RegistryHive regHive = RegistryHive.LocalMachine)
         {
             try
             {

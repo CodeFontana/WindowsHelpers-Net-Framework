@@ -6,8 +6,15 @@ using System.ServiceProcess;
 
 namespace WindowsLibrary
 {
-    public static class ServiceHelper
+    public class ServiceHelper
     {
+        private Logger _logger;
+
+        public ServiceHelper(Logger logger)
+        {
+            _logger = logger;
+        }
+
         public enum ServiceStart // For reference.
         {
             Boot = 0,
@@ -17,7 +24,7 @@ namespace WindowsLibrary
             Disabled = 4
         }
 
-        public static bool ChangeLogonUser(string logComponent, string serviceName, string logonUser, string logonPassword)
+        public bool ChangeLogonUser(string serviceName, string logonUser, string logonPassword)
         {
             /* Built-in logonUsers:
              *   Local Service: logonUser="nt authority\\localservice"  logonPassword=""
@@ -33,7 +40,7 @@ namespace WindowsLibrary
 
                 if (scManagerHandle == IntPtr.Zero)
                 {
-                    Logger.Log(logComponent, "Unable to open service control manager.", Logger.MsgType.ERROR);
+                    _logger.Log("Unable to open service control manager.", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -44,7 +51,7 @@ namespace WindowsLibrary
 
                 if (serviceHandle == IntPtr.Zero)
                 {
-                    Logger.Log(logComponent, "Unable to open specified service [" + serviceName + "].", Logger.MsgType.ERROR);
+                    _logger.Log("Unable to open specified service [" + serviceName + "].", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -63,14 +70,14 @@ namespace WindowsLibrary
 
                 if (!configSuccess)
                 {
-                    Logger.Log(logComponent, "Unable to configure service logon user [ChangeServiceConfig=" +
+                    _logger.Log("Unable to configure service logon user [ChangeServiceConfig=" +
                         Marshal.GetLastWin32Error().ToString() + "].", Logger.MsgType.ERROR);
                     return false;
                 }
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to change service logon user.");
+                _logger.Log(e, "Failed to change service logon user.");
             }
             finally
             {
@@ -83,7 +90,7 @@ namespace WindowsLibrary
             return true;
         }
 
-        public static bool ChangeStartMode(string logComponent, string serviceName, ServiceStartMode startMode)
+        public bool ChangeStartMode(string serviceName, ServiceStartMode startMode)
         {
             IntPtr scManagerHandle = IntPtr.Zero;
             IntPtr serviceHandle = IntPtr.Zero;
@@ -94,7 +101,7 @@ namespace WindowsLibrary
 
                 if (scManagerHandle == IntPtr.Zero)
                 {
-                    Logger.Log(logComponent, "Unable to open service control manager.", Logger.MsgType.ERROR);
+                    _logger.Log("Unable to open service control manager.", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -105,7 +112,7 @@ namespace WindowsLibrary
 
                 if (serviceHandle == IntPtr.Zero)
                 {
-                    Logger.Log(logComponent, "Unable to open specified service [" + serviceName + "].", Logger.MsgType.ERROR);
+                    _logger.Log("Unable to open specified service [" + serviceName + "].", Logger.MsgType.ERROR);
                     return false;
                 }
 
@@ -124,14 +131,14 @@ namespace WindowsLibrary
 
                 if (!configSuccess)
                 {
-                    Logger.Log(logComponent, "Unable to configure service startup mode [ChangeServiceConfig=" +
+                    _logger.Log("Unable to configure service startup mode [ChangeServiceConfig=" +
                         Marshal.GetLastWin32Error().ToString() + "].", Logger.MsgType.ERROR);
                     return false;
                 }
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to change service startup mode.");
+                _logger.Log(e, "Failed to change service startup mode.");
             }
             finally
             {
@@ -144,7 +151,7 @@ namespace WindowsLibrary
             return true;
         }
 
-        public static bool ConfigureRestartActions(string logComponent, string serviceName)
+        public bool ConfigureRestartActions(string serviceName)
         {
             /* Note: For now, this function is hard-coded to set recovery actions
              *       that will restart the service, waiting 60s between restart
@@ -161,7 +168,7 @@ namespace WindowsLibrary
             {
                 if (ServiceExists(serviceName) == false)
                 {
-                    Logger.Log(logComponent, $"ERROR: Service does not exist [{serviceName}].");
+                    _logger.Log($"ERROR: Service does not exist [{serviceName}].");
                     return false;
                 }
 
@@ -171,7 +178,7 @@ namespace WindowsLibrary
 
                 if (scManagerHandle == IntPtr.Zero)
                 {
-                    Logger.Log(logComponent, "ERROR: Unable to open service control manager.");
+                    _logger.Log("ERROR: Unable to open service control manager.");
                     return false;
                 }
 
@@ -179,7 +186,7 @@ namespace WindowsLibrary
 
                 if (scManagerLockHandle == IntPtr.Zero)
                 {
-                    Logger.Log(logComponent, "ERROR: Unable to lock service control manager database.");
+                    _logger.Log("ERROR: Unable to lock service control manager database.");
                     return false;
                 }
 
@@ -190,7 +197,7 @@ namespace WindowsLibrary
 
                 if (serviceHandle == IntPtr.Zero)
                 {
-                    Logger.Log(logComponent, "ERROR: Unable to open specified service [" + serviceName + "].");
+                    _logger.Log("ERROR: Unable to open specified service [" + serviceName + "].");
                     return false;
                 }
 
@@ -218,14 +225,14 @@ namespace WindowsLibrary
 
                 if (!configSuccess)
                 {
-                    Logger.Log(logComponent, "ERROR: Unable to configure service failure actions [ChangeServiceConfig2A=" +
+                    _logger.Log("ERROR: Unable to configure service failure actions [ChangeServiceConfig2A=" +
                         Marshal.GetLastWin32Error().ToString() + "].");
                     return false;
                 }
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, "Failed to configure service failure actions.");
+                _logger.Log(e, "Failed to configure service failure actions.");
             }
             finally
             {
@@ -253,7 +260,7 @@ namespace WindowsLibrary
             return true;
         }
 
-        public static bool ServiceExists(string serviceName)
+        public bool ServiceExists(string serviceName)
         {
             ServiceController[] sc = ServiceController.GetServices();
             var service = sc.FirstOrDefault(s => s.ServiceName.ToLower() == serviceName.ToLower());

@@ -1,21 +1,24 @@
 ﻿using LoggerLibrary;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace WindowsLibrary
 {
     public class NetworkAdapter
     {
-        public int AdapterIndex { get; private set; }
-        public string AdapterName { get; private set; }
-        public bool AdapterEnabled { get; private set; }
-        public int AdapterStatusCode { get; private set; }
-        public string AdapterStatusPhrase { get; private set; }
-        public string IPAddress { get; private set; }
-        public string SubnetMask { get; private set; }
-        public string DefaultGateway { get; private set; }
-        public bool IsDHCPEnabled { get; private set; }
+        public int AdapterIndex { get; set; }
+        public string AdapterName { get; set; }
+        public bool AdapterEnabled { get; set; }
+        public int AdapterStatusCode { get; set; }
+        public string AdapterStatusPhrase { get; set; }
+        public string IPAddress { get; set; }
+        public string SubnetMask { get; set; }
+        public string DefaultGateway { get; set; }
+        public bool IsDHCPEnabled { get; set; }
 
         /*
         NetConnectionStatus (AdapterStatusCode):
@@ -106,23 +109,7 @@ namespace WindowsLibrary
             return true;
         }
 
-        public Tuple<bool, NetworkAdapter> In(List<NetworkAdapter> adapterList)
-        {
-            Tuple<bool, NetworkAdapter> returnTuple = new Tuple<bool, NetworkAdapter>(false, null);
-            
-            foreach (NetworkAdapter nic in adapterList)
-            {
-                if (Equals(nic))
-                {
-                    returnTuple = new Tuple<bool, NetworkAdapter>(true, nic);
-                    break;
-                }
-            }
-
-            return returnTuple;
-        }
-
-        public bool EnableAdapter(string logComponent)
+        public bool EnableAdapter(Logger logger)
         {
             try
             {
@@ -138,12 +125,12 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, $"Failed to ENABLE adapter [{ AdapterName }].");
+                logger.Log(e, $"Failed to ENABLE adapter [{ AdapterName }].");
                 return false;
             }
         }
 
-        public bool ConfigStaticAddress(string logComponent, string newAddress, string newSubnet, string newGateway)
+        public bool ConfigStaticAddress(Logger logger, string newAddress, string newSubnet, string newGateway)
         {
             try
             {
@@ -167,87 +154,9 @@ namespace WindowsLibrary
             }
             catch (Exception e)
             {
-                Logger.Log(logComponent, e, $"Failed to configure adapter [{ AdapterName }] for static IP address.");
+                logger.Log(e, $"Failed to configure adapter [{ AdapterName }] for static IP address.");
                 return false;
             }
-        }
-
-        public static List<NetworkAdapter> QueryNetworkAdapters(string logComponent)
-        {
-            var adapterList = new List<NetworkAdapter>();
-            var adapterQuery = new ManagementObjectSearcher("SELECT NetConnectionId,Index,Name,NetEnabled,NetConnectionStatus FROM Win32_NetworkAdapter WHERE NetConnectionId != NULL");
-
-            foreach (ManagementObject adapterResult in adapterQuery.Get())
-            {
-                var netConnectionId = adapterResult["NetConnectionId"];
-
-                if (netConnectionId != null && !netConnectionId.ToString().Equals(""))
-                {
-                    int adapterIndex = int.Parse(adapterResult["Index"].ToString());
-                    string adapterName = adapterResult["Name"].ToString();
-                    bool adapterEnabled = bool.Parse(adapterResult["NetEnabled"].ToString());
-                    int adapterStatus = int.Parse(adapterResult["NetConnectionStatus"].ToString());
-                    var newAdapter = new NetworkAdapter(adapterIndex, adapterName, adapterEnabled, adapterStatus);
-                    var configQuery = new ManagementObjectSearcher(
-                        "SELECT DHCPEnabled,IPAddress,IPSubnet,DefaultIPGateway FROM Win32_NetworkAdapterConfiguration WHERE Index = " + 
-                        newAdapter.AdapterIndex.ToString());
-
-                    foreach (ManagementObject configResult in configQuery.Get())
-                    {
-                        try
-                        {
-                            var rawIsDHCPEnabled = configResult["DHCPEnabled"];
-                            var rawCurrentIPAddr = configResult["IPAddress"];
-                            var rawCurrentSubnet = configResult["IPSubnet"];
-                            var rawCurrentGatewayAddr = configResult["DefaultIPGateway"];
-
-                            if (!bool.TryParse(rawIsDHCPEnabled.ToString(), out bool isEnabled))
-                            {
-                                newAdapter.IsDHCPEnabled = true;
-                            }
-                            else
-                            {
-                                newAdapter.IsDHCPEnabled = isEnabled;
-                            }
-
-                            if (rawCurrentIPAddr != null)
-                            {
-                                newAdapter.IPAddress = ((string[])rawCurrentIPAddr)[0].ToString();
-                            }
-                            else
-                            {
-                                newAdapter.IPAddress = "<Not configured>";
-                            }
-
-                            if (rawCurrentSubnet != null)
-                            {
-                                newAdapter.SubnetMask = ((string[])rawCurrentSubnet)[0].ToString();
-                            }
-                            else
-                            {
-                                newAdapter.SubnetMask = "<Not configured>";
-                            }
-
-                            if (rawCurrentGatewayAddr != null)
-                            {
-                                newAdapter.DefaultGateway = ((string[])rawCurrentGatewayAddr)[0].ToString();
-                            }
-                            else
-                            {
-                                newAdapter.DefaultGateway = "<Not configured>";
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Log(logComponent, e, $"Failed to query adapter current configuration for [{ newAdapter.AdapterName }].");
-                        }
-                    }
-
-                    adapterList.Add(newAdapter);
-                }
-            }
-
-            return adapterList;
         }
     }
 }

@@ -6,11 +6,22 @@ using System.Threading;
 
 namespace WindowsLibrary
 {
-    public static class DotNetHelper
+    public class DotNetHelper
     {
+        private static readonly DotNetHelper _instance = new DotNetHelper();
         private static bool bacon = false;
 
-        public static bool IsHexChar(char c)
+        private DotNetHelper()
+        {
+
+        }
+
+        public static DotNetHelper GetInstance()
+        {
+            return _instance;
+        }
+
+        public bool IsHexChar(char c)
         {
             if (int.TryParse(c.ToString(), out int result) && result >= 0 && result <= 9)
                 return true;
@@ -29,20 +40,20 @@ namespace WindowsLibrary
             return false;
         }
 
-        public static bool IsHexString(string s)
+        public bool IsHexString(string s)
         {
-            foreach (char c in s) 
+            foreach (char c in s)
             {
                 if (!IsHexChar(c))
                 {
                     return false;
                 }
             }
-            
+
             return true;
         }
 
-        public static bool IsListStringEqual(
+        public bool IsListStringEqual(
             List<string> list1,
             List<string> list2,
             List<string> matchExceptions = null)
@@ -86,7 +97,7 @@ namespace WindowsLibrary
             return true;
         }
 
-        public static bool IsListStringTupleEqual(
+        public bool IsListStringTupleEqual(
             List<Tuple<string, string>> list1,
             List<Tuple<string, string>> list2,
             List<string> matchExceptions = null)
@@ -133,11 +144,11 @@ namespace WindowsLibrary
             return true;
         }
 
-        public static string LoremIpsum(int minWords = 6, int maxWords = 20, int minSentences = 1, int maxSentences = 6)
+        public string LoremIpsum(int minWords = 6, int maxWords = 20, int minSentences = 1, int maxSentences = 6)
         {
             var words = new[] {"bacon", "ipsum", "dolor", "amet", "bresola", "tempor", "strip",
                 "leberkas", "excepteur", "irure", "hamburger", "alcatra", "veniam", "turkey",
-                "est", "exercitation", "in", "brian", "sirloin", "chunk", "tri-tip", "salami", 
+                "est", "exercitation", "in", "brian", "sirloin", "chunk", "tri-tip", "salami",
                 "steak", "anim", "chislic", "commodo", "sint", "pastrami", "lorem", "chuck",
                 "exercitation", "sunt", "pork", "qui", "chicken", "minim", "voluptate", "ribeye",
                 "laborum", "andouille", "elit", "spare ribs", "anim", "cow", "id", "ea", "meatloaf",
@@ -148,8 +159,8 @@ namespace WindowsLibrary
                 "proident", "bresaola", "non", "leberkas", "turducken", "enim", "meatball", "laborum",
                 "nostrud", "strip steak", "officia", "short ribs", "nulla", "ham", "incididunt, " +
                 "velit", "do", "ex", "dolore", "sunt", "nostrud", "mollit", "bacon", "est",
-                "reprehenderit", "landjaeger", "grankfurter", "shoulder", "ground", "round", 
-                "swine", "pariatur", "susage tri-tip", "aute", "chicken tenderloin", "consequat", 
+                "reprehenderit", "landjaeger", "grankfurter", "shoulder", "ground", "round",
+                "swine", "pariatur", "susage tri-tip", "aute", "chicken tenderloin", "consequat",
                 "venison", "pork belly", "pig tongue", "brisket", "picanha", "ball", "tip",
                 "corned beef" };
 
@@ -171,14 +182,14 @@ namespace WindowsLibrary
                 for (int w = 0; w < numWords; w++)
                 {
                     if (w == 0)
-                    { 
+                    {
                         result.Append(textInfo.ToTitleCase(words[rand.Next(words.Length)]));
                     }
                     else
                     {
                         result.Append(words[rand.Next(words.Length)]);
                     }
-                    
+
                     if (w < numWords - 1)
                     {
                         result.Append(" ");
@@ -191,7 +202,7 @@ namespace WindowsLibrary
             return result.ToString();
         }
 
-        public static string PadListElements(List<string[]> inputList, int columnPadding = 1)
+        public string PadListElements(List<string[]> inputList, int columnPadding = 1)
         {
             // Using the first element as the template, store a value indicating
             // the number of columns each string array has. As we are displaying
@@ -258,7 +269,7 @@ namespace WindowsLibrary
             return outputString.ToString();
         }
 
-        public static string StringListToCommaString(string[] inputArray, string delimeter = ",")
+        public string StringListToCommaString(string[] inputArray, string delimeter = ",")
         {
             string returnString = "";
 

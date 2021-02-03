@@ -9,17 +9,17 @@ namespace WindowsLibrary
 {
     public class ProcessInfo
     {
-        public string ProcessName;
-        public string ProcessShortName;
-        public string ProcessFriendlyName;
-        public string ProcessFilePath;
-        public int PID;
-        public string UserName;
-        public string CPUTime;
-        public long NumBytes;
-        public int HandleCount;
-        public int ThreadCount;
-        public string CommandLineArgs;
+        public string ProcessName { get; private set; }
+        public string ProcessShortName { get; private set; }
+        public string ProcessFriendlyName { get; private set; }
+        public string ProcessFilePath { get; private set; }
+        public int PID { get; private set; }
+        public string UserName { get; private set; }
+        public string CPUTime { get; private set; }
+        public long NumBytes { get; private set; }
+        public int HandleCount { get; private set; }
+        public int ThreadCount { get; private set; }
+        public string CommandLineArgs { get; private set; }
 
         public ProcessInfo(Process p)
         {
@@ -55,7 +55,7 @@ namespace WindowsLibrary
                 PID.ToString(),
                 UserName,
                 CPUTime,
-                FileSystemHelper.BytesToReadableValue(NumBytes),
+                new FileSystemHelper(null).BytesToReadableValue(NumBytes),
                 HandleCount.ToString(),
                 ThreadCount.ToString(),
                 ProcessName + " " + CommandLineArgs };
