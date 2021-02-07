@@ -75,7 +75,7 @@ namespace LoggerLibrary
             }
 
             // Set log properties.
-            LogComponent = logName;
+            LogComponent = logName.ToFixedString(20);
             LogMaxBytes = maxBytes;
             LogMaxCount = maxCount;
 
