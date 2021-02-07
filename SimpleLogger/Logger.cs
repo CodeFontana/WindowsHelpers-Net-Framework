@@ -211,19 +211,19 @@ namespace LoggerLibrary
             switch (entryType)
             {
                 case MsgType.NONE:
-                    header += "     |";
+                    header += "    |";
                     break;
                 case MsgType.INFO:
-                    header += " INFO|";
+                    header += "INFO|";
                     break;
                 case MsgType.DEBUG:
-                    header += "DEBUG|";
+                    header += "DBUG|";
                     break;
                 case MsgType.WARN:
-                    header += " WARN|";
+                    header += "WARN|";
                     break;
                 case MsgType.ERROR:
-                    header += "ERROR|";
+                    header += "ERRR|";
                     break;
             }
 
