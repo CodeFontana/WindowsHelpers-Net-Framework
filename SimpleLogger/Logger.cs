@@ -254,8 +254,8 @@ namespace LoggerLibrary
 
                 lock (_lockObj)
                 {
-                    Console.WriteLine(MsgHeader(LogComponent.ToFixedString(20), logLevel) + message);
-                    _logWriter.WriteLine(MsgHeader(LogComponent.ToFixedString(20), logLevel) + message);
+                    Console.WriteLine(MsgHeader(LogComponent, logLevel) + message);
+                    _logWriter.WriteLine(MsgHeader(LogComponent, logLevel) + message);
                 }
             }
         }
@@ -276,13 +276,13 @@ namespace LoggerLibrary
 
             lock (_lockObj)
             {
-                Console.WriteLine(MsgHeader(LogComponent.ToFixedString(20), MsgType.ERROR) + e.Message);
-                _logWriter.WriteLine(MsgHeader(LogComponent.ToFixedString(20), MsgType.ERROR) + e.Message);
+                Console.WriteLine(MsgHeader(LogComponent, MsgType.ERROR) + e.Message);
+                _logWriter.WriteLine(MsgHeader(LogComponent, MsgType.ERROR) + e.Message);
 
                 if (!string.IsNullOrEmpty(message) && !string.IsNullOrWhiteSpace(message))
                 {
-                    Console.WriteLine(MsgHeader(LogComponent.ToFixedString(20), MsgType.ERROR) + message);
-                    _logWriter.WriteLine(MsgHeader(LogComponent.ToFixedString(20), MsgType.ERROR) + message);
+                    Console.WriteLine(MsgHeader(LogComponent, MsgType.ERROR) + message);
+                    _logWriter.WriteLine(MsgHeader(LogComponent, MsgType.ERROR) + message);
                 }
             }
         }
@@ -325,7 +325,7 @@ namespace LoggerLibrary
             }
             else
             {
-                Console.WriteLine(MsgHeader(component.ToFixedString(20), logLevel) + message);
+                Console.WriteLine(MsgHeader(component, logLevel) + message);
             }
         }
 
@@ -347,7 +347,7 @@ namespace LoggerLibrary
             }
             else
             {
-                Console.WriteLine(MsgHeader(component.ToFixedString(20), MsgType.ERROR) + message);
+                Console.WriteLine(MsgHeader(component, MsgType.ERROR) + message);
             }
         }
     }
