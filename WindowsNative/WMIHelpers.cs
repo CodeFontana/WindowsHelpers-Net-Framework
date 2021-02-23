@@ -18,6 +18,38 @@ namespace WindowsLibrary
         }
 
         /// <summary>
+        /// Quick sample usages for the WMI helpers to obtain system information.
+        /// </summary>
+        public static void SampleUsage()
+        {
+            var logFile = new Logger("WMI_Sample_Usage");
+            WMIHelper wmi = new WMIHelper(logFile);
+
+            // EXAMPLE: Get Manufacturer + Model info.
+            logFile.Log("Example: Win32_ComputerSystem [Manufacturer and Model]\n");
+            List<string[]> wmiData = wmi.GetWMIData("root\\cimv2", "Win32_ComputerSystem", new List<string> { "Manufacturer", "Model" });
+            logFile.Log($"Manufacturer: {wmiData[1][0]}");
+            logFile.Log($"Model: {wmiData[1][1]}");
+
+            // EXAMPLE: Get all columns.
+            logFile.Log("Example: Win32_QuickFixEngineering [ALL COLUMNS]\n" +
+                wmi.GetFormattedWMIData(
+                    "root\\cimv2",
+                    "Win32_QuickFixEngineering",
+                    null));
+
+            // EXAMPLE: Get specified columns.
+            logFile.Log("Example: Win32_QuickFixEngineering [SPECIFIC COLUMNS]\n" +
+                wmi.GetFormattedWMIData(
+                    "root\\cimv2",
+                    "Win32_QuickFixEngineering",
+                    new List<string> { "HotFixID", "Description", "InstalledOn", "Caption" },
+                    4));
+
+            logFile.Close();
+        }
+
+        /// <summary>
         /// Gets the available WMI namespaces for the specified management scope.
         /// </summary>
         /// <param name="rootPath">WMI Management Scope path. Default is "root".</param>
@@ -48,7 +80,7 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets the available WMI classes for the specified namespace.
         /// </summary>
-        /// <param name="wmiNamespaceName">The WMI namespace for obtaining the class list.</param>
+        /// <param name="wmiNamespaceName">The WMI namespace for obtaining the class list, e.g. root\\cimv2.</param>
         /// <returns>Returns a list of available classes in the WMI namespace.</returns>
         public List<string> GetClassNamesWithinWmiNamespace(string wmiNamespaceName)
         {
@@ -79,7 +111,7 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets a list of properties (column names) for the specified WMI class.
         /// </summary>
-        /// <param name="namespaceName">The WMI namespace which contains the class.</param>
+        /// <param name="namespaceName">The WMI namespace which contains the class, e.g. root\\cimv2.</param>
         /// <param name="wmiClassName">The WMI class for obtaining the properties list.</param>
         /// <returns>A list of properties.</returns>
         public List<string> GetPropertiesOfWmiClass(string namespaceName, string wmiClassName)
@@ -118,7 +150,7 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets a list of WMI data, including property names, for the specified WMI class.
         /// </summary>
-        /// <param name="namespaceName">The WMI namespace which contains the class.</param>
+        /// <param name="namespaceName">The WMI namespace which contains the class, e.g. root\\cimv2.</param>
         /// <param name="wmiClassName">The WMI class for obtaining the properties list.</param>
         /// <param name="columns">The list of columns to retrieve, the default is null/* for all columns.</param>
         /// <returns>A list representing each row of data from the WMI class.</returns>
@@ -192,7 +224,7 @@ namespace WindowsLibrary
         /// <summary>
         /// Gets a formatted list of WMI data, including property names, for the specified WMI class.
         /// </summary>
-        /// <param name="namespaceName">The WMI namespace which contains the class.</param>
+        /// <param name="namespaceName">The WMI namespace which contains the class, e.g. root\\cimv2.</param>
         /// <param name="wmiClassName">The WMI class for obtaining the properties list.</param>
         /// <param name="columns">The list of columns to retrieve, the default is null/* for all columns.</param>
         /// <param name="columnPadding">Padding (number of spaces) to add between columns of data in the return string.</param>
