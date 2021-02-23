@@ -21,6 +21,33 @@ namespace WindowsLibrary
             return _instance;
         }
 
+        public unsafe struct BufferOverflow
+        {
+            public int before;
+            public fixed int items[16];
+            public int after;
+        }
+
+        public void CreateBufferOverflow()
+        {
+            BufferOverflow x = new BufferOverflow();
+            x.after = 1;
+
+            for (int i = 0; i <= 16; ++i)
+            {
+                unsafe
+                {
+                    x.items[i] = 99;
+                }
+            }
+        }
+
+        public void CreateStackOverflow(int counter)
+        {
+            counter++;
+            CreateStackOverflow(counter);
+        }
+
         public bool IsHexChar(char c)
         {
             if (int.TryParse(c.ToString(), out int result) && result >= 0 && result <= 9)
